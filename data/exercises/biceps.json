@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Barbell Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "Barbell",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "EZ Bar Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "EZ Bar",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Dumbbell Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Hammer Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Neutral Grip Curl",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Incline Dumbbell Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Cable Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Preacher Curl",
+    "muscleGroup": "Biceps",
+    "movementPattern": "Elbow Flexion",
+    "equipment": "Machine",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  }
+]

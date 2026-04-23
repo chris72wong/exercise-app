@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Pull Up",
+    "muscleGroup": "Back",
+    "movementPattern": "Vertical Pull",
+    "equipment": "Bodyweight",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Lat Pulldown",
+    "muscleGroup": "Back",
+    "movementPattern": "Vertical Pull",
+    "equipment": "Cable",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Barbell Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Dumbbell Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Chest Supported Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Machine",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Seated Cable Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Cable",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Straight Arm Pulldown",
+    "muscleGroup": "Back",
+    "movementPattern": "Shoulder Extension",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Machine Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Machine",
+    "type": "Compound",
+    "slotType": "Secondary"
+  }
+]
