@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Barbell Bench Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Incline Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Flat Dumbbell Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Machine Chest Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Machine",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Incline Machine Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Incline Press",
+    "equipment": "Machine",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Cable Fly",
+    "muscleGroup": "Chest",
+    "movementPattern": "Fly",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Pec Deck",
+    "muscleGroup": "Chest",
+    "movementPattern": "Fly",
+    "equipment": "Machine",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Push Up",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Bodyweight",
+    "type": "Compound",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Incline Bench Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Incline Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Accessory"
+  }
+]

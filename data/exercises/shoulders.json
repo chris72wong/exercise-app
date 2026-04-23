@@ -1,0 +1,66 @@
+[
+  {
+    "name": "Barbell Overhead Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Lateral Raise",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Lateral Raise",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Cable Lateral Raise",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Lateral Raise",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Rear Delt Fly",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Rear Delt Raise",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Reverse Pec Deck",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Rear Delt Raise",
+    "equipment": "Machine",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Arnold Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Seated Barbell Overhead Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Barbell Shrug",
+    "muscleGroup": "Traps",
+    "movementPattern": "Scapular Elevation",
+    "equipment": "Barbell",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Dumbbell Shrug",
+    "muscleGroup": "Traps",
+    "movementPattern": "Scapular Elevation",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Cable Shrug",
+    "muscleGroup": "Traps",
+    "movementPattern": "Scapular Elevation",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Face Pull",
+    "muscleGroup": "Traps",
+    "movementPattern": "Scapular Retraction",
+    "equipment": "Cable",
+    "type": "Compound",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Upright Row",
+    "muscleGroup": "Traps",
+    "movementPattern": "Vertical Pull",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Tricep Pushdown",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Elbow Extension",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Overhead Tricep Extension",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Overhead Extension",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Skull Crusher",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Elbow Extension",
+    "equipment": "EZ Bar",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Single Arm Cable Pushdown",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Elbow Extension",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Dumbbell Overhead Extension",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Overhead Extension",
+    "equipment": "Dumbbell",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Close Grip Bench Press",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Reverse Cable Pushdown",
+    "muscleGroup": "Triceps",
+    "movementPattern": "Elbow Extension",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  }
+]
