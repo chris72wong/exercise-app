@@ -104,6 +104,8 @@ export default function HomePage() {
       return new Set();
     }
   });
+  const [nameFor15MinuteTimer, setNameFor15MinuteTimer] = useState("");
+  const [nameFor5MinuteTimer, setNameFor5MinuteTimer] = useState("");
 
   useEffect(() => {
     try {
@@ -198,6 +200,48 @@ export default function HomePage() {
           </header>
 
           <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
+            <div className="mb-6 flex flex-col gap-3">
+              <div className="flex w-full flex-col gap-3 rounded-2xl border border-neutral-700 bg-neutral-950/70 p-4 sm:flex-row sm:items-center">
+                <label htmlFor="name15" className="sr-only">
+                  Name for 15 minute timer
+                </label>
+                <input
+                  id="name15"
+                  type="text"
+                  value={nameFor15MinuteTimer}
+                  onChange={(event) => setNameFor15MinuteTimer(event.target.value)}
+                  placeholder="Type your name"
+                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-500 focus:border-amber-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  className="w-full rounded-xl bg-amber-400 px-5 py-3 text-base font-semibold text-neutral-950 transition hover:bg-amber-300 sm:w-48"
+                >
+                  15 min left
+                </button>
+              </div>
+
+              <div className="flex w-full flex-col gap-3 rounded-2xl border border-neutral-700 bg-neutral-950/70 p-4 sm:flex-row sm:items-center">
+                <label htmlFor="name5" className="sr-only">
+                  Name for 5 minute timer
+                </label>
+                <input
+                  id="name5"
+                  type="text"
+                  value={nameFor5MinuteTimer}
+                  onChange={(event) => setNameFor5MinuteTimer(event.target.value)}
+                  placeholder="Type your name"
+                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-500 focus:border-amber-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  className="w-full rounded-xl bg-rose-400 px-5 py-3 text-base font-semibold text-neutral-950 transition hover:bg-rose-300 sm:w-48"
+                >
+                  5 min left
+                </button>
+              </div>
+            </div>
+
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold">Workout Tracker</h2>
