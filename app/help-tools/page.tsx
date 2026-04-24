@@ -1,7 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { WorkoutDay } from "@/lib/generateWorkout";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
+
+const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
 
 const fullBodyExercisePool = [
   "Goblet Squats",
@@ -42,23 +46,111 @@ function getYoutubeEmbedUrl(stretchName: string): string {
   return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(stretchName + " stretch tutorial")}`;
 }
 
+function calculateCurrentWorkoutProgress(): number {
+  try {
+    const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
+    const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
+    if (!storedWorkout || !storedCompleted) {
+      return 0;
+    }
+
+    const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
+    const parsedCompleted = JSON.parse(storedCompleted) as string[];
+    if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
+      return 0;
+    }
+
+    const completedSet = new Set(parsedCompleted);
+    for (const day of parsedWorkout) {
+      if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
+        continue;
+      }
+
+      const completedCount = day.exercises.filter((exercise) =>
+        completedSet.has(`${day.day}-${exercise}`)
+      ).length;
+      const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
+      const isInProgress = dayPercent > 0 && dayPercent < 100;
+
+      if (isInProgress) {
+        return dayPercent;
+      }
+    }
+
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+type CardProgressBarProps = {
+  percent: number;
+};
+
+function CardProgressBar({ percent }: CardProgressBarProps) {
+  const hasProgress = percent > 0;
+
+  return (
+    <div className="mt-3 w-full">
+      <div
+        className={`relative h-3 w-full overflow-visible rounded-full bg-neutral-800 ${
+          hasProgress ? "progress-track-glow" : ""
+        }`}
+      >
+        <div
+          className={`relative h-full rounded-full bg-emerald-400 transition-all duration-300 ${
+            hasProgress ? "progress-fill-glow" : ""
+          }`}
+          style={{ width: `${percent}%` }}
+        />
+
+        <span
+          className={`pointer-events-none absolute bottom-full mb-0.5 text-[11px] font-semibold tracking-wide transition-all ${
+            hasProgress ? "text-emerald-300 progress-label-glow" : "text-neutral-500"
+          }`}
+          style={{
+            left: `clamp(0%, calc(${percent}% - 1.25rem), calc(100% - 2.5rem))`,
+          }}
+        >
+          {percent}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function HelpToolsPage() {
+  const [currentWorkoutProgressPercent, setCurrentWorkoutProgressPercent] = useState(() => {
+    if (typeof window === "undefined") {
+      return 0;
+    }
+
+    return calculateCurrentWorkoutProgress();
+  });
   const [generatedWorkout, setGeneratedWorkout] = useState<string[]>(() => pickRandomExercises(6));
   const [completedWorkout, setCompletedWorkout] = useState<Set<string>>(new Set());
   const [completedStretches, setCompletedStretches] = useState<Set<string>>(new Set());
-  const [selectedStretchVideo, setSelectedStretchVideo] = useState<string | null>(null);
+  const [expandedStretch, setExpandedStretch] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleStorageUpdate = () => {
+      setCurrentWorkoutProgressPercent(calculateCurrentWorkoutProgress());
+    };
+
+    window.addEventListener("storage", handleStorageUpdate);
+    return () => window.removeEventListener("storage", handleStorageUpdate);
+  }, []);
 
   const workoutProgressPercent = getPercent(completedWorkout.size, generatedWorkout.length);
   const stretchProgressPercent = getPercent(completedStretches.size, stretchChecklistItems.length);
-  const pageProgressPercent = Math.round((workoutProgressPercent + stretchProgressPercent) / 2);
 
-  const selectedVideoUrl = useMemo(() => {
-    if (!selectedStretchVideo) {
+  const expandedVideoUrl = useMemo(() => {
+    if (!expandedStretch) {
       return null;
     }
 
-    return getYoutubeEmbedUrl(selectedStretchVideo);
-  }, [selectedStretchVideo]);
+    return getYoutubeEmbedUrl(expandedStretch);
+  }, [expandedStretch]);
 
   const toggleWorkoutExercise = (exercise: string) => {
     setCompletedWorkout((current) => {
@@ -111,22 +203,17 @@ export default function HelpToolsPage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
-        <WorkoutProgressWidget title="Tools Progress" progressPercent={pageProgressPercent} />
+        <WorkoutProgressWidget
+          title="Current Workout Progress"
+          progressPercent={currentWorkoutProgressPercent}
+        />
 
         <div className="grid gap-6 lg:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="flex-1 self-center">
                 <h2 className="text-xl font-semibold">Full Body Workout Generator</h2>
-                <div className="mt-3 mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
-                  <span>{workoutProgressPercent}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
-                  <div
-                    className="h-full rounded-full bg-emerald-400 transition-all duration-200"
-                    style={{ width: `${workoutProgressPercent}%` }}
-                  />
-                </div>
+                <CardProgressBar percent={workoutProgressPercent} />
               </div>
 
               <button
@@ -188,15 +275,7 @@ export default function HelpToolsPage() {
             <div className="mb-5 flex items-start justify-between gap-4">
               <div className="flex-1 self-center">
                 <h2 className="text-xl font-semibold">Stretch Checklist</h2>
-                <div className="mt-3 mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
-                  <span>{stretchProgressPercent}%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
-                  <div
-                    className="h-full rounded-full bg-emerald-400 transition-all duration-200"
-                    style={{ width: `${stretchProgressPercent}%` }}
-                  />
-                </div>
+                <CardProgressBar percent={stretchProgressPercent} />
               </div>
 
               <button
@@ -216,7 +295,7 @@ export default function HelpToolsPage() {
             <ul className="space-y-3">
               {stretchChecklistItems.map((stretch) => {
                 const complete = completedStretches.has(stretch);
-                const isSelected = selectedStretchVideo === stretch;
+                const isExpanded = expandedStretch === stretch;
 
                 return (
                   <li
@@ -239,36 +318,36 @@ export default function HelpToolsPage() {
 
                       <button
                         type="button"
-                        onClick={() =>
-                          setSelectedStretchVideo((current) => (current === stretch ? null : stretch))
-                        }
+                        onClick={() => setExpandedStretch((current) => (current === stretch ? null : stretch))}
                         className={`text-left text-sm underline-offset-2 transition-colors hover:underline ${
-                          isSelected ? "text-cyan-300" : complete ? "text-neutral-500 line-through" : "text-neutral-200"
+                          isExpanded ? "text-cyan-300" : complete ? "text-neutral-500 line-through" : "text-neutral-200"
                         }`}
                       >
                         {stretch}
                       </button>
                     </div>
+
+                    {isExpanded && expandedVideoUrl && (
+                      <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-3">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-cyan-300">
+                          Stretch Demo
+                        </p>
+                        <div className="overflow-hidden rounded-lg border border-neutral-800">
+                          <iframe
+                            title={`${stretch} video`}
+                            src={expandedVideoUrl}
+                            className="h-52 w-full"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    )}
                   </li>
                 );
               })}
             </ul>
-
-            {selectedVideoUrl && selectedStretchVideo && (
-              <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/80 p-3">
-                <p className="mb-3 text-sm font-medium text-cyan-300">How to: {selectedStretchVideo}</p>
-                <div className="overflow-hidden rounded-xl border border-neutral-800">
-                  <iframe
-                    title={`${selectedStretchVideo} video`}
-                    src={selectedVideoUrl}
-                    className="h-56 w-full"
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )}
           </article>
         </div>
       </section>
