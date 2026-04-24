@@ -41,6 +41,106 @@ body {
     linear-gradient(160deg, #100d0b 0%, #18110d 50%, #0f1415 100%);
 }
 
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-content: center;
+  gap: 0.65rem;
+  padding: 2rem;
+  text-align: center;
+  color: #fff;
+  background: #000;
+  opacity: 1;
+  animation: intro-overlay-fade-out 1700ms ease-in forwards;
+}
+
+.intro-title {
+  position: relative;
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 8rem);
+  font-family: "Avenir Next", "Futura", "Helvetica Neue", sans-serif;
+  font-weight: 600;
+  line-height: 0.88;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f4f3ff;
+  background: linear-gradient(180deg, #ffffff 0%, #e8d6ff 52%, #b8a5ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 2px 0 rgba(219, 199, 255, 0.25),
+    0 10px 22px rgba(122, 64, 199, 0.46),
+    0 0 34px rgba(120, 127, 255, 0.32),
+    0 0 48px rgba(238, 129, 255, 0.2);
+  transform: perspective(450px) rotateX(8deg);
+  animation: intro-title-glow-once 650ms ease-out 1 both;
+}
+
+.intro-subtitle {
+  margin: 0;
+  font-size: clamp(1.2rem, 3.4vw, 2rem);
+  font-family: "Avenir Next", "Futura", "Helvetica Neue", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.97;
+  color: #f4f3ff;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.32),
+    0 6px 16px rgba(122, 64, 199, 0.4),
+    0 0 30px rgba(120, 127, 255, 0.3),
+    0 0 42px rgba(238, 129, 255, 0.2);
+}
+
+@keyframes intro-overlay-fade-out {
+  0% {
+    opacity: 1;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-title-glow-once {
+  0% {
+    text-shadow:
+      0 0 2px rgba(255, 255, 255, 0.2),
+      0 2px 4px rgba(122, 64, 199, 0.2),
+      0 0 10px rgba(120, 127, 255, 0.12);
+  }
+  60% {
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.45),
+      0 6px 14px rgba(122, 64, 199, 0.54),
+      0 0 32px rgba(120, 127, 255, 0.45),
+      0 0 46px rgba(238, 129, 255, 0.25);
+  }
+  100% {
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35),
+      0 2px 0 rgba(219, 199, 255, 0.25),
+      0 10px 22px rgba(122, 64, 199, 0.46),
+      0 0 34px rgba(120, 127, 255, 0.32),
+      0 0 48px rgba(238, 129, 255, 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay,
+  .intro-title,
+  .intro-subtitle {
+    animation: none;
+    transition: none;
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;
