@@ -10,6 +10,8 @@ import {
 } from "@/lib/generateWorkout";
 import { exercises } from "@/data/exercises";
 
+const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+
 type CalendarCell = {
   date: number;
   dateKey: string;
@@ -135,13 +137,32 @@ function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
 }
 
 export default function Page() {
+  const [showIntro, setShowIntro] = useState(true);
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
   const [workout, setWorkout] = useState<WorkoutDay[]>(() => {
-    const initial = generate4DaySplit();
-    return initial.map((day) => ({
-      ...day,
-      exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
-    }));
+    const getSortedWorkout = (days: WorkoutDay[]): WorkoutDay[] =>
+      days.map((day) => ({
+        ...day,
+        exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
+      }));
+
+    if (typeof window === "undefined") {
+      return getSortedWorkout(generate4DaySplit());
+    }
+
+    try {
+      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
+      if (storedWorkout) {
+        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
+        if (Array.isArray(parsedWorkout)) {
+          return getSortedWorkout(parsedWorkout);
+        }
+      }
+    } catch {
+      // Ignore malformed localStorage values and regenerate plan.
+    }
+
+    return getSortedWorkout(generate4DaySplit());
   });
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(
     () => new Set()
@@ -155,6 +176,24 @@ export default function Page() {
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(WORKOUT_STORAGE_KEY, JSON.stringify(workout));
+    } catch {
+      // Ignore storage write failures.
+    }
+  }, [workout]);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const introDurationMs = prefersReducedMotion ? 80 : 1700;
+    const timer = window.setTimeout(() => {
+      setShowIntro(false);
+    }, introDurationMs);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
@@ -559,8 +598,16 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+    <>
+      {showIntro && (
+        <div className="intro-overlay" aria-hidden="true">
+          <p className="intro-title">WELCOME</p>
+          <p className="intro-subtitle">TO GYM PARTNER</p>
+        </div>
+      )}
+
+      <main className="min-h-screen bg-neutral-950 text-white">
+        <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex flex-wrap gap-3">
           <button
             onClick={handleGeneratePushDays}
@@ -676,7 +723,8 @@ export default function Page() {
             ))}
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }
