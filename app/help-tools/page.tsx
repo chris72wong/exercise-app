@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { WorkoutDay } from "@/lib/generateWorkout";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
@@ -21,6 +20,8 @@ const fullBodyExercisePool = [
   "Farmer Carries",
 ];
 
+const initialFullBodyWorkout = fullBodyExercisePool.slice(0, 6);
+
 const stretchChecklistItems = [
   "Standing Quad Stretch",
   "Standing Calf Stretch",
@@ -33,6 +34,18 @@ const stretchChecklistItems = [
   "Supine Figure-Four Stretch (Right)",
 ];
 
+type StretchPose =
+  | "standing-quad"
+  | "standing-calf"
+  | "hamstring"
+  | "knee-to-chest"
+  | "butterfly"
+  | "figure-four";
+
+type StretchReferenceIllustrationProps = {
+  stretchName: string;
+};
+
 function pickRandomExercises(count: number): string[] {
   const shuffled = [...fullBodyExercisePool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
@@ -43,9 +56,132 @@ function getPercent(complete: number, total: number): number {
   return Math.round((complete / total) * 100);
 }
 
-function getStretchImageUrl(stretchName: string): string {
-  return `https://source.unsplash.com/featured/960x540/?${encodeURIComponent(stretchName + ", fitness stretch")}`;
+function getStretchPose(stretchName: string): { pose: StretchPose; isRightSide: boolean } {
+  const isRightSide = stretchName.includes("(Right)");
+
+  if (stretchName.startsWith("Standing Quad")) {
+    return { pose: "standing-quad", isRightSide };
+  }
+
+  if (stretchName.startsWith("Standing Calf")) {
+    return { pose: "standing-calf", isRightSide };
+  }
+
+  if (stretchName.startsWith("Seated Single-Leg Hamstring")) {
+    return { pose: "hamstring", isRightSide };
+  }
+
+  if (stretchName.startsWith("Single Knee-to-Chest")) {
+    return { pose: "knee-to-chest", isRightSide };
+  }
+
+  if (stretchName.startsWith("Supine Figure-Four")) {
+    return { pose: "figure-four", isRightSide };
+  }
+
+  return { pose: "butterfly", isRightSide };
 }
+
+function StretchReferenceIllustration({ stretchName }: StretchReferenceIllustrationProps) {
+  const { pose, isRightSide } = getStretchPose(stretchName);
+  const shouldMirror = isRightSide && pose !== "butterfly" && pose !== "standing-calf";
+
+  return (
+    <svg
+      viewBox="0 0 360 220"
+      className="h-52 w-full bg-neutral-950"
+      role="img"
+      aria-label={`${stretchName} demonstration`}
+    >
+      <rect width="360" height="220" fill="#0a0a0a" />
+      <rect x="36" y="178" width="288" height="12" rx="6" fill="#155e75" opacity="0.38" />
+      <g transform={shouldMirror ? "translate(360 0) scale(-1 1)" : undefined}>
+        {pose === "standing-quad" && (
+          <>
+            <line x1="246" y1="54" x2="246" y2="168" stroke="#334155" strokeWidth="5" strokeLinecap="round" />
+            <circle cx="174" cy="50" r="19" fill="#f8d5b8" />
+            <path d="M168 70 C158 91 159 114 172 132" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M172 132 L166 179" stroke="#f97316" strokeWidth="15" strokeLinecap="round" />
+            <path d="M172 132 C199 141 207 153 192 174" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M169 82 C189 93 203 118 194 151" fill="none" stroke="#f8d5b8" strokeWidth="9" strokeLinecap="round" />
+            <path d="M189 172 L204 170" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M158 181 L176 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M171 82 L244 82" stroke="#f8d5b8" strokeWidth="9" strokeLinecap="round" />
+          </>
+        )}
+
+        {pose === "standing-calf" && (
+          <>
+            <line x1="270" y1="36" x2="270" y2="176" stroke="#334155" strokeWidth="6" strokeLinecap="round" />
+            <circle cx="174" cy="55" r="18" fill="#f8d5b8" />
+            <path d="M167 74 C182 93 199 110 219 126" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M215 126 C197 145 188 160 184 180" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M215 126 C179 132 147 149 117 178" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M116 181 L143 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M179 181 L206 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M188 89 L269 84" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M198 101 L266 102" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+          </>
+        )}
+
+        {pose === "hamstring" && (
+          <>
+            <circle cx="161" cy="76" r="18" fill="#f8d5b8" />
+            <path d="M156 95 C137 111 124 128 112 151" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M112 151 C82 160 60 168 42 180" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M113 151 C143 166 173 176 206 181" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M205 181 L226 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M39 181 L63 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M145 112 C120 130 93 147 55 170" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M153 121 C128 139 100 154 60 174" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+          </>
+        )}
+
+        {pose === "knee-to-chest" && (
+          <>
+            <circle cx="85" cy="130" r="17" fill="#f8d5b8" />
+            <path d="M102 130 C134 130 156 137 178 151" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M178 151 C206 166 236 176 270 180" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M177 151 C182 124 196 107 220 99" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M220 99 C210 123 194 139 176 151" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M140 120 C165 111 188 105 218 98" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M151 136 C172 123 192 112 220 100" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M269 181 L291 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+          </>
+        )}
+
+        {pose === "butterfly" && (
+          <>
+            <circle cx="180" cy="72" r="18" fill="#f8d5b8" />
+            <path d="M180 91 C176 113 176 132 180 151" fill="none" stroke="#fb923c" strokeWidth="15" strokeLinecap="round" />
+            <path d="M178 150 C147 151 121 164 96 181" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M182 150 C213 151 239 164 264 181" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M116 181 C141 168 164 165 180 179" fill="none" stroke="#fb923c" strokeWidth="13" strokeLinecap="round" />
+            <path d="M244 181 C219 168 196 165 180 179" fill="none" stroke="#fb923c" strokeWidth="13" strokeLinecap="round" />
+            <path d="M161 111 L137 154" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M199 111 L223 154" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M170 181 L190 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+          </>
+        )}
+
+        {pose === "figure-four" && (
+          <>
+            <circle cx="85" cy="129" r="17" fill="#f8d5b8" />
+            <path d="M102 130 C133 130 155 137 177 151" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M177 151 C197 164 225 173 258 181" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M177 151 C190 129 207 116 232 113" fill="none" stroke="#fb923c" strokeWidth="14" strokeLinecap="round" />
+            <path d="M232 113 C220 136 200 151 177 151" fill="none" stroke="#f97316" strokeWidth="14" strokeLinecap="round" />
+            <path d="M229 113 L254 125" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M256 181 L279 181" stroke="#2b1d15" strokeWidth="7" strokeLinecap="round" />
+            <path d="M140 120 C165 117 195 115 231 113" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+            <path d="M151 136 C174 130 199 124 230 114" fill="none" stroke="#f8d5b8" strokeWidth="8" strokeLinecap="round" />
+          </>
+        )}
+      </g>
+    </svg>
+  );
+}
+
 
 function calculateCurrentWorkoutProgress(): number {
   try {
@@ -128,7 +264,7 @@ export default function HelpToolsPage() {
 
     return calculateCurrentWorkoutProgress();
   });
-  const [generatedWorkout, setGeneratedWorkout] = useState<string[]>(() => pickRandomExercises(6));
+  const [generatedWorkout, setGeneratedWorkout] = useState<string[]>(initialFullBodyWorkout);
   const [completedWorkout, setCompletedWorkout] = useState<Set<string>>(new Set());
   const [completedStretches, setCompletedStretches] = useState<Set<string>>(new Set());
   const [expandedStretch, setExpandedStretch] = useState<string | null>(null);
@@ -144,14 +280,6 @@ export default function HelpToolsPage() {
 
   const workoutProgressPercent = getPercent(completedWorkout.size, generatedWorkout.length);
   const stretchProgressPercent = getPercent(completedStretches.size, stretchChecklistItems.length);
-
-  const expandedImageUrl = useMemo(() => {
-    if (!expandedStretch) {
-      return null;
-    }
-
-    return getStretchImageUrl(expandedStretch);
-  }, [expandedStretch]);
 
   const toggleWorkoutExercise = (exercise: string) => {
     setCompletedWorkout((current) => {
@@ -328,20 +456,13 @@ export default function HelpToolsPage() {
                       </button>
                     </div>
 
-                    {isExpanded && expandedImageUrl && (
+                    {isExpanded && (
                       <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-3">
                         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-cyan-300">
                           Stretch Reference
                         </p>
                         <div className="overflow-hidden rounded-lg border border-neutral-800">
-                          <Image
-                            src={expandedImageUrl}
-                            alt={`${stretch} demonstration`}
-                            width={960}
-                            height={540}
-                            unoptimized
-                            className="h-52 w-full object-cover"
-                          />
+                          <StretchReferenceIllustration stretchName={stretch} />
                         </div>
                       </div>
                     )}
