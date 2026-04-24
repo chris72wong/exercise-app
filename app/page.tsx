@@ -574,7 +574,7 @@ export default function Page() {
       {showIntro && (
         <div className="intro-overlay" aria-hidden="true">
           <p className="intro-title">WELCOME</p>
-          <p className="intro-subtitle">to Gym Partner</p>
+          <p className="intro-subtitle">TO GYM PARTNER</p>
         </div>
       )}
 

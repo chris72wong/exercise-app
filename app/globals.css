@@ -73,21 +73,27 @@ body {
   text-shadow:
     0 1px 0 rgba(255, 255, 255, 0.35),
     0 2px 0 rgba(219, 199, 255, 0.25),
-    0 7px 16px rgba(122, 64, 199, 0.4),
-    0 0 24px rgba(120, 127, 255, 0.22);
+    0 10px 22px rgba(122, 64, 199, 0.46),
+    0 0 34px rgba(120, 127, 255, 0.32),
+    0 0 48px rgba(238, 129, 255, 0.2);
   transform: perspective(450px) rotateX(8deg);
   animation: intro-title-glow-once 650ms ease-out 1 both;
 }
 
 .intro-subtitle {
   margin: 0;
-  font-size: clamp(1rem, 3vw, 1.8rem);
+  font-size: clamp(1.2rem, 3.4vw, 2rem);
   font-family: "Avenir Next", "Futura", "Helvetica Neue", sans-serif;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: none;
-  opacity: 0.9;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.28);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.97;
+  color: #f4f3ff;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.32),
+    0 6px 16px rgba(122, 64, 199, 0.4),
+    0 0 30px rgba(120, 127, 255, 0.3),
+    0 0 42px rgba(238, 129, 255, 0.2);
 }
 
 @keyframes intro-overlay-fade-out {
@@ -112,15 +118,17 @@ body {
   60% {
     text-shadow:
       0 1px 0 rgba(255, 255, 255, 0.45),
-      0 4px 10px rgba(122, 64, 199, 0.45),
-      0 0 24px rgba(120, 127, 255, 0.35);
+      0 6px 14px rgba(122, 64, 199, 0.54),
+      0 0 32px rgba(120, 127, 255, 0.45),
+      0 0 46px rgba(238, 129, 255, 0.25);
   }
   100% {
     text-shadow:
       0 1px 0 rgba(255, 255, 255, 0.35),
       0 2px 0 rgba(219, 199, 255, 0.25),
-      0 7px 16px rgba(122, 64, 199, 0.4),
-      0 0 24px rgba(120, 127, 255, 0.22);
+      0 10px 22px rgba(122, 64, 199, 0.46),
+      0 0 34px rgba(120, 127, 255, 0.32),
+      0 0 48px rgba(238, 129, 255, 0.2);
   }
 }
 
