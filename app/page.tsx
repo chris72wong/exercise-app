@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Holidays from "date-holidays";
+import type { WorkoutDay } from "@/lib/generateWorkout";
 
 const INTRO_SEEN_STORAGE_KEY = "homeIntroSeen:v1";
 const HOME_CALENDAR_STORAGE_KEY = "homeCalendarCompletedDates:v1";
+const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
 
 type CalendarCell = {
   date: number;
@@ -104,8 +107,46 @@ export default function HomePage() {
       return new Set();
     }
   });
-  const [nameFor15MinuteTimer, setNameFor15MinuteTimer] = useState("");
-  const [nameFor5MinuteTimer, setNameFor5MinuteTimer] = useState("");
+  const [exercisePageProgressPercent, setExercisePageProgressPercent] = useState(() => {
+    if (typeof window === "undefined") {
+      return 0;
+    }
+
+    try {
+      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
+      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
+      if (!storedWorkout || !storedCompleted) {
+        return 0;
+      }
+
+      const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
+      const parsedCompleted = JSON.parse(storedCompleted) as string[];
+      if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
+        return 0;
+      }
+
+      const completedSet = new Set(parsedCompleted);
+      for (const day of parsedWorkout) {
+        if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
+          continue;
+        }
+
+        const completedCount = day.exercises.filter((exercise) =>
+          completedSet.has(`${day.day}-${exercise}`)
+        ).length;
+        const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
+        const isInProgress = dayPercent > 0 && dayPercent < 100;
+
+        if (isInProgress) {
+          return dayPercent;
+        }
+      }
+
+      return 0;
+    } catch {
+      return 0;
+    }
+  });
 
   useEffect(() => {
     try {
@@ -133,6 +174,52 @@ export default function HomePage() {
       // Ignore storage read/write failures.
     }
   }, [showIntro]);
+
+  useEffect(() => {
+    const calculateInProgressPercent = (): number => {
+      try {
+        const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
+        const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
+        if (!storedWorkout || !storedCompleted) {
+          return 0;
+        }
+
+        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
+        const parsedCompleted = JSON.parse(storedCompleted) as string[];
+        if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
+          return 0;
+        }
+
+        const completedSet = new Set(parsedCompleted);
+        for (const day of parsedWorkout) {
+          if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
+            continue;
+          }
+
+          const completedCount = day.exercises.filter((exercise) =>
+            completedSet.has(`${day.day}-${exercise}`)
+          ).length;
+          const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
+          const isInProgress = dayPercent > 0 && dayPercent < 100;
+
+          if (isInProgress) {
+            return dayPercent;
+          }
+        }
+
+        return 0;
+      } catch {
+        return 0;
+      }
+    };
+
+    const handleStorageUpdate = () => {
+      setExercisePageProgressPercent(calculateInProgressPercent());
+    };
+
+    window.addEventListener("storage", handleStorageUpdate);
+    return () => window.removeEventListener("storage", handleStorageUpdate);
+  }, []);
 
   const calendarCells = getCurrentMonthCalendar(displayMonth, completedDates);
   const monthLabel = displayMonth.toLocaleDateString("en-US", {
@@ -199,48 +286,24 @@ export default function HomePage() {
             </details>
           </header>
 
-          <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
-            <div className="mb-6 flex flex-col gap-3">
-              <div className="flex w-full flex-col gap-3 rounded-2xl border border-neutral-700 bg-neutral-950/70 p-4 sm:flex-row sm:items-center">
-                <label htmlFor="name15" className="sr-only">
-                  Name for 15 minute timer
-                </label>
-                <input
-                  id="name15"
-                  type="text"
-                  value={nameFor15MinuteTimer}
-                  onChange={(event) => setNameFor15MinuteTimer(event.target.value)}
-                  placeholder="Type your name"
-                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-500 focus:border-amber-400 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  className="w-full rounded-xl bg-amber-400 px-5 py-3 text-base font-semibold text-neutral-950 transition hover:bg-amber-300 sm:w-48"
-                >
-                  15 min left
-                </button>
+          <div className="mb-6 rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              Exercise Progress
+            </p>
+            <div className="w-full sm:w-48">
+              <div className="mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
+                <span>{exercisePageProgressPercent}%</span>
               </div>
-
-              <div className="flex w-full flex-col gap-3 rounded-2xl border border-neutral-700 bg-neutral-950/70 p-4 sm:flex-row sm:items-center">
-                <label htmlFor="name5" className="sr-only">
-                  Name for 5 minute timer
-                </label>
-                <input
-                  id="name5"
-                  type="text"
-                  value={nameFor5MinuteTimer}
-                  onChange={(event) => setNameFor5MinuteTimer(event.target.value)}
-                  placeholder="Type your name"
-                  className="w-full rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-3 text-base text-neutral-100 placeholder:text-neutral-500 focus:border-amber-400 focus:outline-none"
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+                <div
+                  className="h-full rounded-full bg-emerald-400 transition-all duration-200"
+                  style={{ width: `${exercisePageProgressPercent}%` }}
                 />
-                <button
-                  type="button"
-                  className="w-full rounded-xl bg-rose-400 px-5 py-3 text-base font-semibold text-neutral-950 transition hover:bg-rose-300 sm:w-48"
-                >
-                  5 min left
-                </button>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
 
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>

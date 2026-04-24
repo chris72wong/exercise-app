@@ -11,6 +11,7 @@ import {
 import { exercises } from "@/data/exercises";
 
 const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
 
 type DragState = {
   dayName: string;
@@ -93,9 +94,27 @@ export default function Page() {
 
     return getSortedWorkout(generate4DaySplit());
   });
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(
-    () => new Set()
-  );
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") {
+      return new Set();
+    }
+
+    try {
+      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
+      if (!storedCompleted) {
+        return new Set();
+      }
+
+      const parsedCompleted = JSON.parse(storedCompleted) as string[];
+      if (!Array.isArray(parsedCompleted)) {
+        return new Set();
+      }
+
+      return new Set(parsedCompleted);
+    } catch {
+      return new Set();
+    }
+  });
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
@@ -107,6 +126,17 @@ export default function Page() {
       // Ignore storage write failures.
     }
   }, [workout]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        WORKOUT_COMPLETED_STORAGE_KEY,
+        JSON.stringify([...completedExercises])
+      );
+    } catch {
+      // Ignore storage write failures.
+    }
+  }, [completedExercises]);
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
