@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { WorkoutDay } from "@/lib/generateWorkout";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
@@ -42,8 +43,8 @@ function getPercent(complete: number, total: number): number {
   return Math.round((complete / total) * 100);
 }
 
-function getYoutubeEmbedUrl(stretchName: string): string {
-  return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(stretchName + " stretch tutorial")}`;
+function getStretchImageUrl(stretchName: string): string {
+  return `https://source.unsplash.com/featured/960x540/?${encodeURIComponent(stretchName + ", fitness stretch")}`;
 }
 
 function calculateCurrentWorkoutProgress(): number {
@@ -144,12 +145,12 @@ export default function HelpToolsPage() {
   const workoutProgressPercent = getPercent(completedWorkout.size, generatedWorkout.length);
   const stretchProgressPercent = getPercent(completedStretches.size, stretchChecklistItems.length);
 
-  const expandedVideoUrl = useMemo(() => {
+  const expandedImageUrl = useMemo(() => {
     if (!expandedStretch) {
       return null;
     }
 
-    return getYoutubeEmbedUrl(expandedStretch);
+    return getStretchImageUrl(expandedStretch);
   }, [expandedStretch]);
 
   const toggleWorkoutExercise = (exercise: string) => {
@@ -327,19 +328,19 @@ export default function HelpToolsPage() {
                       </button>
                     </div>
 
-                    {isExpanded && expandedVideoUrl && (
+                    {isExpanded && expandedImageUrl && (
                       <div className="mt-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-3">
                         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-cyan-300">
-                          Stretch Demo
+                          Stretch Reference
                         </p>
                         <div className="overflow-hidden rounded-lg border border-neutral-800">
-                          <iframe
-                            title={`${stretch} video`}
-                            src={expandedVideoUrl}
-                            className="h-52 w-full"
-                            loading="lazy"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
+                          <Image
+                            src={expandedImageUrl}
+                            alt={`${stretch} demonstration`}
+                            width={960}
+                            height={540}
+                            unoptimized
+                            className="h-52 w-full object-cover"
                           />
                         </div>
                       </div>
