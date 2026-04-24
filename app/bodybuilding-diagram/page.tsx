@@ -1,10 +1,10 @@
+import WorkoutProgressWidget from "../_components/workout-progress-widget";
+
 export default function BodybuildingDiagramPage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
-        <header className="mb-8 rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-          <h1 className="text-3xl font-semibold sm:text-4xl">Muscle Diagrams</h1>
-        </header>
+        <WorkoutProgressWidget title="Muscle Diagram Progress" progressPercent={100} />
 
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
