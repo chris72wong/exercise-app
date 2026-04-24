@@ -60,17 +60,17 @@ body {
   position: relative;
   margin: 0;
   font-size: clamp(3rem, 12vw, 8rem);
-  font-family: "Arial Narrow", "Helvetica Neue", "Roboto Condensed", sans-serif;
-  font-weight: 800;
+  font-family: "Avenir Next Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  font-weight: 500;
   line-height: 0.88;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: #f8f4ff;
   text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.8),
-    0 0 20px rgba(255, 255, 255, 0.45),
-    0 0 48px rgba(127, 198, 255, 0.35);
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
-  animation: intro-letter-glow 1600ms ease-in-out infinite;
+    0 0 6px rgba(255, 255, 255, 0.65),
+    0 0 18px rgba(237, 98, 255, 0.35),
+    0 0 26px rgba(88, 142, 255, 0.2);
+  animation: intro-title-glow-once 900ms ease-out 1 both;
 }
 
 .intro-subtitle {
@@ -96,21 +96,24 @@ body {
   }
 }
 
-@keyframes intro-letter-glow {
-  0%,
-  100% {
+@keyframes intro-title-glow-once {
+  0% {
+    text-shadow:
+      0 0 2px rgba(255, 255, 255, 0.3),
+      0 0 8px rgba(237, 98, 255, 0.12),
+      0 0 10px rgba(88, 142, 255, 0.1);
+  }
+  60% {
     text-shadow:
       0 0 8px rgba(255, 255, 255, 0.8),
-      0 0 20px rgba(255, 255, 255, 0.45),
-      0 0 48px rgba(127, 198, 255, 0.35);
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+      0 0 24px rgba(237, 98, 255, 0.48),
+      0 0 34px rgba(88, 142, 255, 0.35);
   }
-  50% {
+  100% {
     text-shadow:
-      0 0 10px rgba(255, 255, 255, 0.95),
-      0 0 32px rgba(255, 255, 255, 0.65),
-      0 0 72px rgba(127, 198, 255, 0.55);
-    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.5));
+      0 0 6px rgba(255, 255, 255, 0.65),
+      0 0 18px rgba(237, 98, 255, 0.35),
+      0 0 26px rgba(88, 142, 255, 0.2);
   }
 }
 
