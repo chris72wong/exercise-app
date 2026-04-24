@@ -91,6 +91,42 @@ export default function HomePage() {
     if (typeof window === "undefined") {
       return new Set();
     }
+  }, [workout]);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const introDurationMs = prefersReducedMotion ? 1200 : 3000;
+    const timer = window.setTimeout(() => {
+      setShowIntro(false);
+    }, introDurationMs);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const pushDays = workout.filter((day) => day.focus === "Push");
+  const pullDays = workout.filter((day) => day.focus === "Pull");
+  const todayKey = getTodayKey();
+
+  const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
+
+  const getRelatedExercises = (currentExerciseName: string): string[] => {
+    const muscleGroup = getExerciseMuscleGroup(currentExerciseName);
+    if (!muscleGroup) return [];
+
+    return exercises
+      .filter(
+        (exercise) =>
+          exercise.muscleGroup === muscleGroup && exercise.name !== currentExerciseName
+      )
+      .map((exercise) => exercise.name)
+      .sort((a, b) => a.localeCompare(b));
+  };
+
+  const isDayComplete = (day: WorkoutDay): boolean =>
+    day.exercises.length > 0 &&
+    day.exercises.every((exercise) =>
+      completedExercises.has(getExerciseKey(day.day, exercise))
+    );
 
     try {
       const storedDates = window.localStorage.getItem(HOME_CALENDAR_STORAGE_KEY);
@@ -259,7 +295,10 @@ export default function HomePage() {
       {showIntro && (
         <div className="intro-overlay" aria-hidden="true">
           <p className="intro-title">WELCOME</p>
-          <p className="intro-subtitle">TO GYM PARTNER</p>
+          <p className="intro-subtitle">
+            <span className="intro-subtitle-to">TO</span>{" "}
+            <span className="intro-subtitle-highlight">GYM PARTNER</span>
+          </p>
         </div>
       )}
 
