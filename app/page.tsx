@@ -159,7 +159,7 @@ export default function Page() {
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const introDurationMs = prefersReducedMotion ? 120 : 2800;
+    const introDurationMs = prefersReducedMotion ? 80 : 1700;
     const timer = window.setTimeout(() => {
       setShowIntro(false);
     }, introDurationMs);
