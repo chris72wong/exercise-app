@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Holidays from "date-holidays";
 import {
   generate4DaySplit,
   regeneratePushDays,
@@ -12,15 +11,6 @@ import {
 import { exercises } from "@/data/exercises";
 
 const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-
-type CalendarCell = {
-  date: number;
-  dateKey: string;
-  isToday: boolean;
-  isCardWorkout: boolean;
-  isManualWorkout: boolean;
-  holidayName?: string;
-} | null;
 
 type DragState = {
   dayName: string;
@@ -70,66 +60,6 @@ function sortExercisesByMuscleGroup(
   });
 }
 
-function formatDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function getTodayKey(): string {
-  return formatDateKey(new Date());
-}
-
-function getDaysInMonth(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-}
-
-function getFirstDayOfMonth(date: Date): number {
-  return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-}
-
-function getCurrentMonthCalendar(
-  displayMonth: Date,
-  cardDates: Set<string>,
-  manualDates: Set<string>
-): CalendarCell[] {
-  const daysInMonth = getDaysInMonth(displayMonth);
-  const firstDay = getFirstDayOfMonth(displayMonth);
-  const calendar: CalendarCell[] = [];
-  const holidays = new Holidays("CA");
-  const holidayMap = new Map<string, string>();
-
-  for (const holiday of holidays.getHolidays(displayMonth.getFullYear())) {
-    const holidayDate = new Date(holiday.start);
-    const holidayKey = formatDateKey(holidayDate);
-
-    if (holidayDate.getMonth() === displayMonth.getMonth() && holiday.type !== "observance") {
-      holidayMap.set(holidayKey, holiday.name);
-    }
-  }
-
-  for (let index = 0; index < firstDay; index += 1) {
-    calendar.push(null);
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-      const date = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day);
-    const dateKey = formatDateKey(date);
-
-    calendar.push({
-      date: day,
-      dateKey,
-      isToday: dateKey === getTodayKey(),
-      isCardWorkout: cardDates.has(dateKey),
-      isManualWorkout: manualDates.has(dateKey),
-      holidayName: holidayMap.get(dateKey),
-    });
-  }
-
-  return calendar;
-}
-
 function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
   const next = [...items];
   const [movedItem] = next.splice(fromIndex, 1);
@@ -138,7 +68,6 @@ function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
 }
 
 export default function Page() {
-  const [displayMonth, setDisplayMonth] = useState(() => new Date());
   const [workout, setWorkout] = useState<WorkoutDay[]>(() => {
     const getSortedWorkout = (days: WorkoutDay[]): WorkoutDay[] =>
       days.map((day) => ({
@@ -167,12 +96,6 @@ export default function Page() {
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(
     () => new Set()
   );
-  const [cardCompletedDates, setCardCompletedDates] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [manualCompletedDates, setManualCompletedDates] = useState<Set<string>>(
-    () => new Set()
-  );
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
@@ -187,7 +110,6 @@ export default function Page() {
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
-  const todayKey = getTodayKey();
 
   const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
 
@@ -209,18 +131,6 @@ export default function Page() {
     day.exercises.every((exercise) =>
       completedExercises.has(getExerciseKey(day.day, exercise))
     );
-
-  const syncTodayToWorkout = () => {
-    setCardCompletedDates((prev) => {
-      if (prev.has(todayKey)) {
-        return prev;
-      }
-
-      const next = new Set(prev);
-      next.add(todayKey);
-      return next;
-    });
-  };
 
   const toggleWorkoutCard = (day: WorkoutDay) => {
     const complete = isDayComplete(day);
@@ -244,33 +154,6 @@ export default function Page() {
       return next;
     });
 
-    syncTodayToWorkout();
-  };
-
-  const toggleCalendarDate = (dateKey: string) => {
-    if (manualCompletedDates.has(dateKey)) {
-      setManualCompletedDates((prev) => {
-        const next = new Set(prev);
-        next.delete(dateKey);
-        return next;
-      });
-      return;
-    }
-
-    if (cardCompletedDates.has(dateKey)) {
-      setCardCompletedDates((prev) => {
-        const next = new Set(prev);
-        next.delete(dateKey);
-        return next;
-      });
-      return;
-    }
-
-    setManualCompletedDates((prev) => {
-      const next = new Set(prev);
-      next.add(dateKey);
-      return next;
-    });
   };
 
   const handleReplaceExercise = (
@@ -307,7 +190,6 @@ export default function Page() {
 
   const toggleExerciseComplete = (dayName: string, exerciseName: string) => {
     const key = getExerciseKey(dayName, exerciseName);
-    const workoutDay = workout.find((day) => day.day === dayName);
 
     setCompletedExercises((prev) => {
       const next = new Set(prev);
@@ -315,15 +197,6 @@ export default function Page() {
         next.delete(key);
       } else {
         next.add(key);
-      }
-
-      if (
-        workoutDay &&
-        workoutDay.exercises.every((exercise) =>
-          exercise === exerciseName ? next.has(key) : next.has(getExerciseKey(dayName, exercise))
-        )
-      ) {
-        syncTodayToWorkout();
       }
 
       return next;
@@ -565,28 +438,6 @@ export default function Page() {
     );
   };
 
-  const calendarCells = getCurrentMonthCalendar(
-    displayMonth,
-    cardCompletedDates,
-    manualCompletedDates
-  );
-  const monthLabel = displayMonth.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
-  const goToPreviousMonth = () => {
-    setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
-  };
-
-  const goToNextMonth = () => {
-    setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
-  };
-
-  const goToCurrentMonth = () => {
-    setDisplayMonth(new Date());
-  };
-
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -645,95 +496,6 @@ export default function Page() {
           {pullDays.map((day, index) => renderWorkoutCard(day, index))}
         </div>
 
-        <div className="mt-16 rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold">Workout Tracker</h2>
-              <p className="mt-1 text-sm text-neutral-400">
-                Today is outlined. Workout dates stay marked until you clear them on the calendar.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 rounded-full bg-neutral-950/70 px-2 py-1 text-sm text-neutral-300">
-              <button
-                type="button"
-                onClick={goToPreviousMonth}
-                className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
-                aria-label="Previous month"
-              >
-                ←
-              </button>
-
-              <button
-                type="button"
-                onClick={goToCurrentMonth}
-                className="rounded px-1 py-1 transition-colors hover:bg-neutral-800"
-                aria-label="Go to current month"
-              >
-                {monthLabel}
-              </button>
-
-              <button
-                type="button"
-                onClick={goToNextMonth}
-                className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
-                aria-label="Next month"
-              >
-                →
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-              <div
-                key={day}
-                className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400"
-              >
-                {day}
-              </div>
-            ))}
-
-            {calendarCells.map((cell, index) => (
-              <div key={index} className="aspect-square">
-                {cell ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleCalendarDate(cell.dateKey)}
-                    className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
-                      cell.isManualWorkout
-                        ? "bg-blue-500/25 text-blue-200"
-                        : cell.isCardWorkout
-                          ? "bg-emerald-500/25 text-emerald-200"
-                        : cell.holidayName
-                          ? "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20"
-                          : "bg-neutral-950/70 text-white hover:bg-neutral-900"
-                    } ${cell.isToday ? "ring-2 ring-amber-400" : ""}`}
-                    aria-label={`Toggle workout date ${cell.dateKey}`}
-                  >
-                    <span>{cell.date}</span>
-
-                    {cell.holidayName && (
-                      <span className="mt-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
-                        {cell.holidayName}
-                      </span>
-                    )}
-
-                    {(cell.isCardWorkout || cell.isManualWorkout) && (
-                      <span
-                        className={`absolute bottom-1 right-1 h-2 w-2 rounded-full ${
-                          cell.isManualWorkout ? "bg-blue-400" : "bg-emerald-400"
-                        }`}
-                      />
-                    )}
-                  </button>
-                ) : (
-                  <div className="h-full w-full" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </main>
   );
