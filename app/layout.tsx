@@ -31,7 +31,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <header className="sticky top-0 z-40 border-b border-neutral-800/80 bg-neutral-950/95 backdrop-blur">
           <nav
-            className="mx-auto flex w-full max-w-6xl items-center gap-3 px-6 py-4"
+            className="mx-auto flex w-full max-w-6xl items-center justify-center gap-3 px-6 py-4"
             aria-label="Primary"
           >
             <Link
