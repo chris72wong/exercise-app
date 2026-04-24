@@ -10,6 +10,8 @@ import {
 } from "@/lib/generateWorkout";
 import { exercises } from "@/data/exercises";
 
+const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+
 type CalendarCell = {
   date: number;
   dateKey: string;
@@ -138,11 +140,29 @@ export default function Page() {
   const [showIntro, setShowIntro] = useState(true);
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
   const [workout, setWorkout] = useState<WorkoutDay[]>(() => {
-    const initial = generate4DaySplit();
-    return initial.map((day) => ({
-      ...day,
-      exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
-    }));
+    const getSortedWorkout = (days: WorkoutDay[]): WorkoutDay[] =>
+      days.map((day) => ({
+        ...day,
+        exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
+      }));
+
+    if (typeof window === "undefined") {
+      return getSortedWorkout(generate4DaySplit());
+    }
+
+    try {
+      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
+      if (storedWorkout) {
+        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
+        if (Array.isArray(parsedWorkout)) {
+          return getSortedWorkout(parsedWorkout);
+        }
+      }
+    } catch {
+      // Ignore malformed localStorage values and regenerate plan.
+    }
+
+    return getSortedWorkout(generate4DaySplit());
   });
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(
     () => new Set()
@@ -158,6 +178,12 @@ export default function Page() {
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
   useEffect(() => {
+    try {
+      window.localStorage.setItem(WORKOUT_STORAGE_KEY, JSON.stringify(workout));
+    } catch {
+      // Ignore storage write failures.
+    }
+  }, [workout]);
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const introDurationMs = prefersReducedMotion ? 80 : 1700;
     const timer = window.setTimeout(() => {
