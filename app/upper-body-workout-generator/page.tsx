@@ -9,8 +9,10 @@ import {
   type WorkoutDay,
 } from "@/lib/generateWorkout";
 import { exercises } from "@/data/exercises";
+import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
 const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
+const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
 
 type DragState = {
   dayName: string;
@@ -93,9 +95,27 @@ export default function Page() {
 
     return getSortedWorkout(generate4DaySplit());
   });
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(
-    () => new Set()
-  );
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") {
+      return new Set();
+    }
+
+    try {
+      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
+      if (!storedCompleted) {
+        return new Set();
+      }
+
+      const parsedCompleted = JSON.parse(storedCompleted) as string[];
+      if (!Array.isArray(parsedCompleted)) {
+        return new Set();
+      }
+
+      return new Set(parsedCompleted);
+    } catch {
+      return new Set();
+    }
+  });
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
@@ -108,8 +128,37 @@ export default function Page() {
     }
   }, [workout]);
 
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        WORKOUT_COMPLETED_STORAGE_KEY,
+        JSON.stringify([...completedExercises])
+      );
+    } catch {
+      // Ignore storage write failures.
+    }
+  }, [completedExercises]);
+
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
+
+  const currentWorkoutProgressPercent = workout.reduce<number>((foundPercent, day) => {
+    if (foundPercent > 0) {
+      return foundPercent;
+    }
+
+    if (day.exercises.length === 0) {
+      return 0;
+    }
+
+    const completedCount = day.exercises.filter((exercise) =>
+      completedExercises.has(`${day.day}-${exercise}`)
+    ).length;
+    const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
+    const isInProgress = dayPercent > 0 && dayPercent < 100;
+
+    return isInProgress ? dayPercent : 0;
+  }, 0);
 
   const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
 
@@ -469,6 +518,11 @@ export default function Page() {
             </nav>
           </details>
         </header>
+
+        <WorkoutProgressWidget
+          title="Current Workout Progress"
+          progressPercent={currentWorkoutProgressPercent}
+        />
 
         <div className="mb-8 flex flex-wrap gap-3">
           <button
