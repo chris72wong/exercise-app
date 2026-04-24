@@ -135,6 +135,7 @@ function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
 }
 
 export default function Page() {
+  const [showIntro, setShowIntro] = useState(true);
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
   const [workout, setWorkout] = useState<WorkoutDay[]>(() => {
     const initial = generate4DaySplit();
@@ -155,6 +156,16 @@ export default function Page() {
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const introDurationMs = prefersReducedMotion ? 120 : 2800;
+    const timer = window.setTimeout(() => {
+      setShowIntro(false);
+    }, introDurationMs);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
@@ -559,8 +570,16 @@ export default function Page() {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+    <>
+      {showIntro && (
+        <div className="intro-overlay" aria-hidden="true">
+          <p className="intro-title">WELCOME</p>
+          <p className="intro-subtitle">to Gym Partner</p>
+        </div>
+      )}
+
+      <main className="min-h-screen bg-neutral-950 text-white">
+        <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex flex-wrap gap-3">
           <button
             onClick={handleGeneratePushDays}
@@ -676,7 +695,8 @@ export default function Page() {
             ))}
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

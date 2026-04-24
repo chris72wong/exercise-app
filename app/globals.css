@@ -41,6 +41,62 @@ body {
     linear-gradient(160deg, #100d0b 0%, #18110d 50%, #0f1415 100%);
 }
 
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-content: center;
+  gap: 0.65rem;
+  padding: 2rem;
+  text-align: center;
+  color: #fff;
+  background: #000;
+  animation: intro-overlay-fade 2800ms ease-in-out forwards;
+}
+
+.intro-title {
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 8rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.35);
+}
+
+.intro-subtitle {
+  margin: 0;
+  font-size: clamp(1rem, 3vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: none;
+  opacity: 0.9;
+}
+
+@keyframes intro-overlay-fade {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay,
+  .intro-title,
+  .intro-subtitle {
+    animation: none;
+    transition: none;
+  }
+}
+
 a {
   color: inherit;
   text-decoration: none;
