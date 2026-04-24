@@ -288,17 +288,22 @@ export default function HomePage() {
 
           <div className="mb-6 rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              Exercise Progress
+              Workout Progress
             </p>
-            <div className="w-full sm:w-48">
-              <div className="mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
-                <span>{exercisePageProgressPercent}%</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div className="w-48 max-w-full">
+              <div className="relative h-3 w-full overflow-visible rounded-full bg-neutral-800 progress-track-glow">
                 <div
-                  className="h-full rounded-full bg-emerald-400 transition-all duration-200"
+                  className="relative h-full rounded-full bg-emerald-400 transition-all duration-300 progress-fill-glow"
                   style={{ width: `${exercisePageProgressPercent}%` }}
                 />
+                <span
+                  className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[11px] font-semibold tracking-wide text-emerald-300 progress-label-glow"
+                  style={{
+                    left: `clamp(0%, calc(${exercisePageProgressPercent}% - 1.25rem), calc(100% - 2.5rem))`,
+                  }}
+                >
+                  {exercisePageProgressPercent}%
+                </span>
               </div>
             </div>
           </div>
