@@ -57,6 +57,7 @@ body {
 }
 
 .intro-title {
+  position: relative;
   margin: 0;
   font-size: clamp(3rem, 12vw, 8rem);
   font-family: "Arial Narrow", "Helvetica Neue", "Roboto Condensed", sans-serif;
@@ -64,7 +65,12 @@ body {
   line-height: 0.88;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  text-shadow: 0 0 14px rgba(255, 255, 255, 0.28);
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 255, 255, 0.45),
+    0 0 48px rgba(127, 198, 255, 0.35);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+  animation: intro-letter-glow 1600ms ease-in-out infinite;
 }
 
 .intro-subtitle {
@@ -75,6 +81,7 @@ body {
   letter-spacing: 0.28em;
   text-transform: none;
   opacity: 0.9;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.28);
 }
 
 @keyframes intro-overlay-fade-out {
@@ -86,6 +93,24 @@ body {
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes intro-letter-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 8px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 255, 255, 0.45),
+      0 0 48px rgba(127, 198, 255, 0.35);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+  }
+  50% {
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.95),
+      0 0 32px rgba(255, 255, 255, 0.65),
+      0 0 72px rgba(127, 198, 255, 0.55);
+    filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.5));
   }
 }
 
