@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Holidays from "date-holidays";
 import type { WorkoutDay } from "@/lib/generateWorkout";
+import WorkoutProgressWidget from "./_components/workout-progress-widget";
 
 const INTRO_SEEN_STORAGE_KEY = "homeIntroSeen:v1";
 const HOME_CALENDAR_STORAGE_KEY = "homeCalendarCompletedDates:v1";
@@ -286,27 +287,10 @@ export default function HomePage() {
             </details>
           </header>
 
-          <div className="mb-6 rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              Current Workout Progress
-            </p>
-            <div className="w-full">
-              <div className="relative h-3 w-full overflow-visible rounded-full bg-neutral-800 progress-track-glow">
-                <div
-                  className="relative h-full rounded-full bg-emerald-400 transition-all duration-300 progress-fill-glow"
-                  style={{ width: `${exercisePageProgressPercent}%` }}
-                />
-                <span
-                  className="pointer-events-none absolute bottom-full mb-1 text-[11px] font-semibold tracking-wide text-emerald-300 progress-label-glow"
-                  style={{
-                    left: `clamp(0%, calc(${exercisePageProgressPercent}% - 1.25rem), calc(100% - 2.5rem))`,
-                  }}
-                >
-                  {exercisePageProgressPercent}%
-                </span>
-              </div>
-            </div>
-          </div>
+          <WorkoutProgressWidget
+            title="Current Workout Progress"
+            progressPercent={exercisePageProgressPercent}
+          />
 
           <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
 

@@ -9,6 +9,7 @@ import {
   type WorkoutDay,
 } from "@/lib/generateWorkout";
 import { exercises } from "@/data/exercises";
+import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
 const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
 const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
@@ -140,6 +141,24 @@ export default function Page() {
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
+
+  const currentWorkoutProgressPercent = workout.reduce<number>((foundPercent, day) => {
+    if (foundPercent > 0) {
+      return foundPercent;
+    }
+
+    if (day.exercises.length === 0) {
+      return 0;
+    }
+
+    const completedCount = day.exercises.filter((exercise) =>
+      completedExercises.has(`${day.day}-${exercise}`)
+    ).length;
+    const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
+    const isInProgress = dayPercent > 0 && dayPercent < 100;
+
+    return isInProgress ? dayPercent : 0;
+  }, 0);
 
   const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
 
@@ -499,6 +518,11 @@ export default function Page() {
             </nav>
           </details>
         </header>
+
+        <WorkoutProgressWidget
+          title="Current Workout Progress"
+          progressPercent={currentWorkoutProgressPercent}
+        />
 
         <div className="mb-8 flex flex-wrap gap-3">
           <button
