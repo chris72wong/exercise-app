@@ -5,7 +5,6 @@ import Holidays from "date-holidays";
 import type { WorkoutDay } from "@/lib/generateWorkout";
 import WorkoutProgressWidget from "./_components/workout-progress-widget";
 
-const INTRO_SEEN_STORAGE_KEY = "homeIntroSeen:v1";
 const HOME_CALENDAR_STORAGE_KEY = "homeCalendarCompletedDates:v1";
 const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
 const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
@@ -74,17 +73,6 @@ function getCurrentMonthCalendar(displayMonth: Date, completedDates: Set<string>
 }
 
 export default function HomePage() {
-  const [showIntro, setShowIntro] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    try {
-      return window.localStorage.getItem(INTRO_SEEN_STORAGE_KEY) !== "true";
-    } catch {
-      return false;
-    }
-  });
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
   const [completedDates, setCompletedDates] = useState<Set<string>>(() => {
     if (typeof window === "undefined") {
@@ -155,25 +143,6 @@ export default function HomePage() {
       // Ignore storage write failures.
     }
   }, [completedDates]);
-
-  useEffect(() => {
-    if (!showIntro) {
-      return;
-    }
-
-    try {
-      window.localStorage.setItem(INTRO_SEEN_STORAGE_KEY, "true");
-      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const introDurationMs = prefersReducedMotion ? 80 : 1700;
-      const timer = window.setTimeout(() => {
-        setShowIntro(false);
-      }, introDurationMs);
-
-      return () => window.clearTimeout(timer);
-    } catch {
-      // Ignore storage read/write failures.
-    }
-  }, [showIntro]);
 
   useEffect(() => {
     const calculateInProgressPercent = (): number => {
@@ -254,107 +223,97 @@ export default function HomePage() {
   };
 
   return (
-    <>
-      {showIntro && (
-        <div className="intro-overlay" aria-hidden="true">
-          <p className="intro-title">WELCOME</p>
-          <p className="intro-subtitle">TO GYM PARTNER</p>
-        </div>
-      )}
+    <main className="min-h-screen bg-neutral-950 text-white">
+      <div className="mx-auto flex w-full max-w-5xl flex-col px-6 py-8">
+        <WorkoutProgressWidget
+          title="Current Workout Progress"
+          progressPercent={exercisePageProgressPercent}
+        />
 
-      <main className="min-h-screen bg-neutral-950 text-white">
-        <div className="mx-auto flex w-full max-w-5xl flex-col px-6 py-8">
-          <WorkoutProgressWidget
-            title="Current Workout Progress"
-            progressPercent={exercisePageProgressPercent}
-          />
-
-          <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
-
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold">Workout Tracker</h2>
-                <p className="mt-1 text-sm text-neutral-400">
-                  Today is outlined. Toggle dates to mark workout days.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-full bg-neutral-950/70 px-2 py-1 text-sm text-neutral-300">
-                <button
-                  type="button"
-                  onClick={goToPreviousMonth}
-                  className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
-                  aria-label="Previous month"
-                >
-                  ←
-                </button>
-
-                <button
-                  type="button"
-                  onClick={goToCurrentMonth}
-                  className="rounded px-1 py-1 transition-colors hover:bg-neutral-800"
-                  aria-label="Go to current month"
-                >
-                  {monthLabel}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={goToNextMonth}
-                  className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
-                  aria-label="Next month"
-                >
-                  →
-                </button>
-              </div>
+        <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold">Workout Tracker</h2>
+              <p className="mt-1 text-sm text-neutral-400">
+                Today is outlined. Toggle dates to mark workout days.
+              </p>
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div
-                  key={day}
-                  className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400"
-                >
-                  {day}
-                </div>
-              ))}
+            <div className="flex items-center gap-2 rounded-full bg-neutral-950/70 px-2 py-1 text-sm text-neutral-300">
+              <button
+                type="button"
+                onClick={goToPreviousMonth}
+                className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
+                aria-label="Previous month"
+              >
+                ←
+              </button>
 
-              {calendarCells.map((cell, index) => (
-                <div key={index} className="aspect-square">
-                  {cell ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleCalendarDate(cell.dateKey)}
-                      className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
-                        cell.isComplete
-                          ? "bg-emerald-500/25 text-emerald-200"
-                          : cell.holidayName
-                            ? "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20"
-                            : "bg-neutral-950/70 text-white hover:bg-neutral-900"
-                      } ${cell.isToday ? "ring-2 ring-amber-400" : ""}`}
-                      aria-label={`Toggle workout date ${cell.dateKey}`}
-                    >
-                      <span>{cell.date}</span>
+              <button
+                type="button"
+                onClick={goToCurrentMonth}
+                className="rounded px-1 py-1 transition-colors hover:bg-neutral-800"
+                aria-label="Go to current month"
+              >
+                {monthLabel}
+              </button>
 
-                      {cell.holidayName && (
-                        <span className="mt-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
-                          {cell.holidayName}
-                        </span>
-                      )}
-
-                      {cell.isComplete && (
-                        <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-emerald-400" />
-                      )}
-                    </button>
-                  ) : (
-                    <div className="h-full w-full" />
-                  )}
-                </div>
-              ))}
+              <button
+                type="button"
+                onClick={goToNextMonth}
+                className="rounded-full px-2 py-1 transition-colors hover:bg-neutral-800"
+                aria-label="Next month"
+              >
+                →
+              </button>
             </div>
           </div>
+
+          <div className="grid grid-cols-7 gap-2">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div
+                key={day}
+                className="py-2 text-center text-xs font-semibold uppercase tracking-wide text-neutral-400"
+              >
+                {day}
+              </div>
+            ))}
+
+            {calendarCells.map((cell, index) => (
+              <div key={index} className="aspect-square">
+                {cell ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleCalendarDate(cell.dateKey)}
+                    className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
+                      cell.isComplete
+                        ? "bg-emerald-500/25 text-emerald-200"
+                        : cell.holidayName
+                          ? "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20"
+                          : "bg-neutral-950/70 text-white hover:bg-neutral-900"
+                    } ${cell.isToday ? "ring-2 ring-amber-400" : ""}`}
+                    aria-label={`Toggle workout date ${cell.dateKey}`}
+                  >
+                    <span>{cell.date}</span>
+
+                    {cell.holidayName && (
+                      <span className="mt-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
+                        {cell.holidayName}
+                      </span>
+                    )}
+
+                    {cell.isComplete && (
+                      <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-emerald-400" />
+                    )}
+                  </button>
+                ) : (
+                  <div className="h-full w-full" />
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
