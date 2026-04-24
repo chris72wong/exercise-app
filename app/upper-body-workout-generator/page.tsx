@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   generate4DaySplit,
   regeneratePushDays,
@@ -490,35 +489,6 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <header className="mb-8 flex justify-center">
-          <details className="relative">
-            <summary className="cursor-pointer list-none rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm font-semibold hover:bg-neutral-800">
-              Menu
-            </summary>
-            <nav className="absolute left-1/2 z-20 mt-2 w-72 -translate-x-1/2 rounded-xl border border-neutral-700 bg-neutral-900 p-3 shadow-xl">
-              <p className="mb-2 px-2 text-xs uppercase tracking-wide text-neutral-400">Pages</p>
-              <ul className="space-y-1">
-                <li>
-                  <Link
-                    href="/"
-                    className="block rounded-lg px-3 py-2 text-sm text-neutral-100 transition-colors hover:bg-neutral-800"
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/upper-body-workout-generator"
-                    className="block rounded-lg px-3 py-2 text-sm text-neutral-100 transition-colors hover:bg-neutral-800"
-                  >
-                    Upper Body Workout Generator
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </details>
-        </header>
-
         <WorkoutProgressWidget
           title="Current Workout Progress"
           progressPercent={currentWorkoutProgressPercent}
