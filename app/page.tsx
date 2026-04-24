@@ -187,7 +187,7 @@ export default function Page() {
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const introDurationMs = prefersReducedMotion ? 80 : 1700;
+    const introDurationMs = prefersReducedMotion ? 1200 : 3000;
     const timer = window.setTimeout(() => {
       setShowIntro(false);
     }, introDurationMs);
@@ -602,7 +602,10 @@ export default function Page() {
       {showIntro && (
         <div className="intro-overlay" aria-hidden="true">
           <p className="intro-title">WELCOME</p>
-          <p className="intro-subtitle">TO GYM PARTNER</p>
+          <p className="intro-subtitle">
+            <span className="intro-subtitle-to">TO</span>{" "}
+            <span className="intro-subtitle-highlight">GYM PARTNER</span>
+          </p>
         </div>
       )}
 
