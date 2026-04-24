@@ -184,6 +184,8 @@ export default function Page() {
       // Ignore storage write failures.
     }
   }, [workout]);
+
+  useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const introDurationMs = prefersReducedMotion ? 80 : 1700;
     const timer = window.setTimeout(() => {
