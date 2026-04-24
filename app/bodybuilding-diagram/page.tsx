@@ -1,104 +1,112 @@
-const muscles = [
-  "Biceps",
-  "Shoulders",
-  "Triceps",
-  "Quads",
-  "Hamstrings",
-  "Calves",
-  "Glutes",
-  "Traps",
-  "Abs",
-];
-
 export default function BodybuildingDiagramPage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
         <header className="mb-8 rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Body Map</p>
-          <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">Bodybuilding Muscle Diagram</h1>
-          <p className="mt-3 max-w-2xl text-sm text-neutral-300">
-            Front and back views with the key muscle groups you requested.
-          </p>
+          <h1 className="text-3xl font-semibold sm:text-4xl">Muscle Diagrams</h1>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_250px]">
-          <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-              <h2 className="mb-4 text-xl font-semibold text-amber-100">Front View</h2>
-              <div className="rounded-2xl bg-neutral-950/80 p-4">
-                <svg viewBox="0 0 280 520" className="mx-auto w-full max-w-[320px]" role="img" aria-label="Front body diagram with muscle labels">
-                  <ellipse cx="140" cy="52" rx="36" ry="38" fill="#fed7aa" opacity="0.95" />
-                  <rect x="108" y="92" width="64" height="116" rx="30" fill="#fdba74" opacity="0.9" />
-                  <rect x="80" y="104" width="28" height="92" rx="14" fill="#fb923c" opacity="0.85" />
-                  <rect x="172" y="104" width="28" height="92" rx="14" fill="#fb923c" opacity="0.85" />
-                  <rect x="96" y="208" width="88" height="64" rx="26" fill="#f97316" opacity="0.85" />
-                  <rect x="104" y="272" width="30" height="152" rx="14" fill="#ea580c" opacity="0.9" />
-                  <rect x="146" y="272" width="30" height="152" rx="14" fill="#ea580c" opacity="0.9" />
-                  <rect x="102" y="424" width="32" height="74" rx="14" fill="#fb923c" opacity="0.9" />
-                  <rect x="146" y="424" width="32" height="74" rx="14" fill="#fb923c" opacity="0.9" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
+            <div className="rounded-2xl bg-neutral-950/80 p-4">
+              <svg
+                viewBox="0 0 360 620"
+                className="mx-auto w-full max-w-[360px]"
+                role="img"
+                aria-label="Front body muscle diagram"
+              >
+                <text x="180" y="38" textAnchor="middle" fill="#7dd3fc" fontSize="20" fontWeight="700" opacity="0.9">
+                  FRONT
+                </text>
 
-                  <line x1="210" y1="132" x2="260" y2="118" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="264" y="120" fill="#a5f3fc" fontSize="12">Shoulders</text>
+                <ellipse cx="180" cy="86" rx="43" ry="46" fill="#fcd5b5" />
+                <rect x="138" y="132" width="84" height="138" rx="40" fill="#4b2e1f" opacity="0.65" />
+                <rect x="102" y="148" width="36" height="118" rx="20" fill="#3b2619" opacity="0.75" />
+                <rect x="222" y="148" width="36" height="118" rx="20" fill="#3b2619" opacity="0.75" />
+                <rect x="130" y="270" width="100" height="84" rx="30" fill="#3b2619" opacity="0.7" />
+                <rect x="140" y="354" width="34" height="176" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="186" y="354" width="34" height="176" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="138" y="530" width="36" height="68" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="186" y="530" width="36" height="68" rx="16" fill="#3b2619" opacity="0.78" />
 
-                  <line x1="88" y1="148" x2="22" y2="140" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="6" y="142" fill="#a5f3fc" fontSize="12">Biceps</text>
+                <ellipse cx="148" cy="164" rx="17" ry="18" fill="#f97316" />
+                <ellipse cx="212" cy="164" rx="17" ry="18" fill="#f97316" />
+                <rect x="104" y="198" width="26" height="56" rx="12" fill="#fb923c" />
+                <rect x="230" y="198" width="26" height="56" rx="12" fill="#fb923c" />
+                <rect x="157" y="198" width="46" height="70" rx="20" fill="#fb923c" />
+                <rect x="158" y="276" width="44" height="66" rx="18" fill="#f97316" />
+                <rect x="142" y="378" width="30" height="122" rx="12" fill="#ea580c" />
+                <rect x="188" y="378" width="30" height="122" rx="12" fill="#ea580c" />
+                <rect x="142" y="530" width="30" height="54" rx="12" fill="#fb923c" />
+                <rect x="188" y="530" width="30" height="54" rx="12" fill="#fb923c" />
 
-                  <line x1="140" y1="162" x2="220" y2="168" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="224" y="171" fill="#a5f3fc" fontSize="12">Abs</text>
+                <polyline points="148,164 120,156 78,140" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="20" y="142" fill="#a5f3fc" fontSize="14" fontWeight="600">Shoulders</text>
 
-                  <line x1="128" y1="322" x2="24" y2="312" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="6" y="314" fill="#a5f3fc" fontSize="12">Quads</text>
+                <polyline points="104,218 84,224 48,234" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="12" y="238" fill="#a5f3fc" fontSize="14" fontWeight="600">Biceps</text>
 
-                  <line x1="102" y1="458" x2="22" y2="474" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="6" y="478" fill="#a5f3fc" fontSize="12">Calves</text>
-                </svg>
-              </div>
-            </article>
+                <polyline points="180,294 218,300 282,308" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="288" y="312" fill="#a5f3fc" fontSize="14" fontWeight="600">Abs</text>
 
-            <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-              <h2 className="mb-4 text-xl font-semibold text-amber-100">Back View</h2>
-              <div className="rounded-2xl bg-neutral-950/80 p-4">
-                <svg viewBox="0 0 280 520" className="mx-auto w-full max-w-[320px]" role="img" aria-label="Back body diagram with muscle labels">
-                  <ellipse cx="140" cy="52" rx="36" ry="38" fill="#fed7aa" opacity="0.95" />
-                  <rect x="108" y="92" width="64" height="126" rx="30" fill="#fdba74" opacity="0.9" />
-                  <rect x="80" y="104" width="28" height="102" rx="14" fill="#fb923c" opacity="0.85" />
-                  <rect x="172" y="104" width="28" height="102" rx="14" fill="#fb923c" opacity="0.85" />
-                  <rect x="96" y="218" width="88" height="74" rx="26" fill="#f97316" opacity="0.88" />
-                  <rect x="104" y="292" width="30" height="132" rx="14" fill="#ea580c" opacity="0.9" />
-                  <rect x="146" y="292" width="30" height="132" rx="14" fill="#ea580c" opacity="0.9" />
-                  <rect x="102" y="424" width="32" height="74" rx="14" fill="#fb923c" opacity="0.9" />
-                  <rect x="146" y="424" width="32" height="74" rx="14" fill="#fb923c" opacity="0.9" />
+                <polyline points="142,438 110,442 50,448" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="12" y="452" fill="#a5f3fc" fontSize="14" fontWeight="600">Quads</text>
 
-                  <line x1="136" y1="104" x2="24" y2="90" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="6" y="92" fill="#a5f3fc" fontSize="12">Traps</text>
+                <polyline points="142,550 114,560 52,576" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="12" y="584" fill="#a5f3fc" fontSize="14" fontWeight="600">Calves</text>
+              </svg>
+            </div>
+          </article>
 
-                  <line x1="88" y1="168" x2="18" y2="176" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="2" y="179" fill="#a5f3fc" fontSize="12">Triceps</text>
+          <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
+            <div className="rounded-2xl bg-neutral-950/80 p-4">
+              <svg
+                viewBox="0 0 360 620"
+                className="mx-auto w-full max-w-[360px]"
+                role="img"
+                aria-label="Back body muscle diagram"
+              >
+                <text x="180" y="38" textAnchor="middle" fill="#7dd3fc" fontSize="20" fontWeight="700" opacity="0.9">
+                  BACK
+                </text>
 
-                  <line x1="114" y1="182" x2="238" y2="190" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="242" y="193" fill="#a5f3fc" fontSize="12">Back</text>
+                <ellipse cx="180" cy="86" rx="43" ry="46" fill="#fcd5b5" />
+                <rect x="138" y="132" width="84" height="156" rx="40" fill="#4b2e1f" opacity="0.65" />
+                <rect x="102" y="148" width="36" height="126" rx="20" fill="#3b2619" opacity="0.75" />
+                <rect x="222" y="148" width="36" height="126" rx="20" fill="#3b2619" opacity="0.75" />
+                <rect x="130" y="286" width="100" height="86" rx="30" fill="#3b2619" opacity="0.72" />
+                <rect x="140" y="372" width="34" height="158" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="186" y="372" width="34" height="158" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="138" y="530" width="36" height="68" rx="16" fill="#3b2619" opacity="0.78" />
+                <rect x="186" y="530" width="36" height="68" rx="16" fill="#3b2619" opacity="0.78" />
 
-                  <line x1="140" y1="240" x2="240" y2="252" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="244" y="255" fill="#a5f3fc" fontSize="12">Glutes</text>
+                <rect x="160" y="138" width="40" height="30" rx="12" fill="#f97316" />
+                <rect x="148" y="172" width="64" height="94" rx="24" fill="#fb923c" />
+                <rect x="104" y="206" width="26" height="56" rx="12" fill="#fb923c" />
+                <rect x="230" y="206" width="26" height="56" rx="12" fill="#fb923c" />
+                <rect x="150" y="286" width="60" height="66" rx="22" fill="#f97316" />
+                <rect x="142" y="390" width="30" height="126" rx="12" fill="#ea580c" />
+                <rect x="188" y="390" width="30" height="126" rx="12" fill="#ea580c" />
+                <rect x="142" y="530" width="30" height="54" rx="12" fill="#fb923c" />
+                <rect x="188" y="530" width="30" height="54" rx="12" fill="#fb923c" />
 
-                  <line x1="160" y1="352" x2="236" y2="360" stroke="#67e8f9" strokeWidth="2" />
-                  <text x="240" y="363" fill="#a5f3fc" fontSize="12">Hamstrings</text>
-                </svg>
-              </div>
-            </article>
-          </div>
+                <polyline points="180,152 132,128 74,114" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="14" y="118" fill="#a5f3fc" fontSize="14" fontWeight="600">Traps</text>
 
-          <aside className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-white">Labeled Muscles</h2>
-            <ul className="mt-4 space-y-2 text-sm text-neutral-300">
-              {muscles.map((muscle) => (
-                <li key={muscle} className="rounded-lg bg-neutral-950/70 px-3 py-2">
-                  {muscle}
-                </li>
-              ))}
-            </ul>
-          </aside>
+                <polyline points="212,210 248,206 304,198" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="308" y="202" fill="#a5f3fc" fontSize="14" fontWeight="600">Back</text>
+
+                <polyline points="104,222 82,226 40,238" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="10" y="242" fill="#a5f3fc" fontSize="14" fontWeight="600">Triceps</text>
+
+                <polyline points="182,318 226,328 292,340" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="298" y="344" fill="#a5f3fc" fontSize="14" fontWeight="600">Glutes</text>
+
+                <polyline points="218,448 250,452 304,460" fill="none" stroke="#67e8f9" strokeWidth="2" />
+                <text x="308" y="464" fill="#a5f3fc" fontSize="14" fontWeight="600">Hamstrings</text>
+              </svg>
+            </div>
+          </article>
         </div>
       </section>
     </main>
