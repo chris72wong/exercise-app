@@ -79,45 +79,44 @@ export default function BodybuildingDiagramPage() {
                 role="img"
                 aria-label="Front body muscle diagram"
               >
-                <text x="210" y="36" textAnchor="middle" fill="#7dd3fc" fontSize="20" fontWeight="700" opacity="0.9">
+                <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
                   FRONT
                 </text>
 
                 <ellipse cx="210" cy="82" rx="40" ry="42" fill="#f8d5b8" />
-                <rect x="174" y="124" width="72" height="132" rx="34" fill="#2b1d15" opacity="0.68" />
-                <rect x="142" y="138" width="28" height="122" rx="14" fill="#2b1d15" opacity="0.72" />
-                <rect x="250" y="138" width="28" height="122" rx="14" fill="#2b1d15" opacity="0.72" />
-                <rect x="168" y="258" width="84" height="80" rx="26" fill="#2b1d15" opacity="0.72" />
-                <rect x="178" y="338" width="28" height="168" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="214" y="338" width="28" height="168" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="176" y="506" width="30" height="78" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="214" y="506" width="30" height="78" rx="14" fill="#2b1d15" opacity="0.78" />
+                <rect x="174" y="124" width="72" height="136" rx="34" fill="#2b1d15" opacity="0.68" />
+                <rect x="142" y="134" width="28" height="130" rx="14" fill="#2b1d15" opacity="0.72" />
+                <rect x="250" y="134" width="28" height="130" rx="14" fill="#2b1d15" opacity="0.72" />
+                <rect x="168" y="260" width="84" height="72" rx="26" fill="#2b1d15" opacity="0.72" />
+                <rect x="178" y="332" width="28" height="200" rx="14" fill="#2b1d15" opacity="0.78" />
+                <rect x="214" y="332" width="28" height="200" rx="14" fill="#2b1d15" opacity="0.78" />
 
-                <ellipse cx="176" cy="158" rx="18" ry="18" fill="#fb923c" />
-                <ellipse cx="244" cy="158" rx="18" ry="18" fill="#fb923c" />
-                <rect x="144" y="196" width="24" height="58" rx="11" fill="#f97316" />
-                <rect x="252" y="196" width="24" height="58" rx="11" fill="#f97316" />
-                <rect x="190" y="196" width="40" height="64" rx="18" fill="#fdba74" />
-                <rect x="190" y="266" width="40" height="66" rx="18" fill="#f97316" />
-                <rect x="178" y="358" width="28" height="126" rx="12" fill="#ea580c" />
-                <rect x="214" y="358" width="28" height="126" rx="12" fill="#ea580c" />
-                <rect x="178" y="514" width="28" height="62" rx="12" fill="#fb923c" />
-                <rect x="214" y="514" width="28" height="62" rx="12" fill="#fb923c" />
+                <ellipse cx="176" cy="146" rx="18" ry="18" fill="#fb923c" />
+                <ellipse cx="244" cy="146" rx="18" ry="18" fill="#fb923c" />
+                <rect x="144" y="176" width="24" height="52" rx="11" fill="#f97316" />
+                <rect x="252" y="176" width="24" height="52" rx="11" fill="#f97316" />
+                <rect x="190" y="188" width="40" height="62" rx="18" fill="#fdba74" />
+                <circle cx="210" cy="284" r="24" fill="#f97316" />
 
-                <polyline points="176,158 140,150 96,134" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="126" fill="#a5f3fc" fontSize="13" fontWeight="600">Shoulders</text>
+                <rect x="178" y="342" width="28" height="120" rx="12" fill="#ea580c" />
+                <rect x="214" y="342" width="28" height="120" rx="12" fill="#ea580c" />
+                <rect x="178" y="462" width="28" height="80" rx="12" fill="#fb923c" />
+                <rect x="214" y="462" width="28" height="80" rx="12" fill="#fb923c" />
 
-                <polyline points="144,218 110,226 92,244" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="254" fill="#a5f3fc" fontSize="13" fontWeight="600">Biceps</text>
+                <polyline points="176,146 138,132 94,114" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="104" fill="#ffffff" fontSize="13" fontWeight="600">Shoulders</text>
 
-                <polyline points="210,294 258,300 306,318" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="312" y="326" fill="#a5f3fc" fontSize="13" fontWeight="600">Abs</text>
+                <polyline points="144,192 112,196 92,208" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="220" fill="#ffffff" fontSize="13" fontWeight="600">Biceps</text>
 
-                <polyline points="178,420 136,428 98,446" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="456" fill="#a5f3fc" fontSize="13" fontWeight="600">Quads</text>
+                <polyline points="210,284 262,292 308,304" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="314" y="314" fill="#ffffff" fontSize="13" fontWeight="600">Abs</text>
 
-                <polyline points="178,544 140,560 98,580" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="592" fill="#a5f3fc" fontSize="13" fontWeight="600">Calves</text>
+                <polyline points="178,396 136,404 96,420" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="432" fill="#ffffff" fontSize="13" fontWeight="600">Quads</text>
+
+                <polyline points="178,500 136,516 96,536" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="548" fill="#ffffff" fontSize="13" fontWeight="600">Calves</text>
               </svg>
             </div>
           </article>
@@ -130,44 +129,46 @@ export default function BodybuildingDiagramPage() {
                 role="img"
                 aria-label="Back body muscle diagram"
               >
-                <text x="210" y="36" textAnchor="middle" fill="#7dd3fc" fontSize="20" fontWeight="700" opacity="0.9">
+                <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
                   BACK
                 </text>
 
                 <ellipse cx="210" cy="82" rx="40" ry="42" fill="#f8d5b8" />
                 <rect x="174" y="124" width="72" height="146" rx="34" fill="#2b1d15" opacity="0.68" />
-                <rect x="142" y="138" width="28" height="126" rx="14" fill="#2b1d15" opacity="0.72" />
-                <rect x="250" y="138" width="28" height="126" rx="14" fill="#2b1d15" opacity="0.72" />
-                <rect x="168" y="270" width="84" height="84" rx="26" fill="#2b1d15" opacity="0.72" />
-                <rect x="178" y="354" width="28" height="154" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="214" y="354" width="28" height="154" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="176" y="508" width="30" height="76" rx="14" fill="#2b1d15" opacity="0.78" />
-                <rect x="214" y="508" width="30" height="76" rx="14" fill="#2b1d15" opacity="0.78" />
+                <rect x="142" y="134" width="28" height="132" rx="14" fill="#2b1d15" opacity="0.72" />
+                <rect x="250" y="134" width="28" height="132" rx="14" fill="#2b1d15" opacity="0.72" />
+                <rect x="168" y="270" width="84" height="78" rx="26" fill="#2b1d15" opacity="0.72" />
+                <rect x="178" y="348" width="28" height="194" rx="14" fill="#2b1d15" opacity="0.78" />
+                <rect x="214" y="348" width="28" height="194" rx="14" fill="#2b1d15" opacity="0.78" />
 
                 <rect x="190" y="136" width="40" height="28" rx="12" fill="#fb923c" />
-                <rect x="176" y="168" width="68" height="94" rx="24" fill="#f97316" />
-                <rect x="144" y="206" width="24" height="56" rx="11" fill="#fb923c" />
-                <rect x="252" y="206" width="24" height="56" rx="11" fill="#fb923c" />
-                <rect x="180" y="274" width="60" height="70" rx="22" fill="#ea580c" />
-                <rect x="178" y="374" width="28" height="126" rx="12" fill="#ea580c" />
-                <rect x="214" y="374" width="28" height="126" rx="12" fill="#ea580c" />
-                <rect x="178" y="514" width="28" height="62" rx="12" fill="#fb923c" />
-                <rect x="214" y="514" width="28" height="62" rx="12" fill="#fb923c" />
+                <rect x="176" y="166" width="68" height="86" rx="24" fill="#f97316" />
+                <rect x="144" y="176" width="24" height="52" rx="11" fill="#fb923c" />
+                <rect x="252" y="176" width="24" height="52" rx="11" fill="#fb923c" />
+                <circle cx="192" cy="296" r="22" fill="#ea580c" />
+                <circle cx="228" cy="296" r="22" fill="#ea580c" />
+                <rect x="178" y="356" width="28" height="126" rx="12" fill="#ea580c" />
+                <rect x="214" y="356" width="28" height="126" rx="12" fill="#ea580c" />
+                <rect x="178" y="482" width="28" height="76" rx="12" fill="#fb923c" />
+                <rect x="214" y="482" width="28" height="76" rx="12" fill="#fb923c" />
 
-                <polyline points="210,150 166,130 104,112" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="104" fill="#a5f3fc" fontSize="13" fontWeight="600">Traps</text>
+                <polyline points="210,150 166,132 104,114" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="106" fill="#ffffff" fontSize="13" fontWeight="600">Traps</text>
 
-                <polyline points="244,206 290,202 326,186" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="334" y="182" fill="#a5f3fc" fontSize="13" fontWeight="600">Back</text>
+                <polyline points="244,196 286,190 324,176" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="332" y="170" fill="#ffffff" fontSize="13" fontWeight="600">Back</text>
 
-                <polyline points="144,224 112,232 96,248" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="20" y="258" fill="#a5f3fc" fontSize="13" fontWeight="600">Triceps</text>
+                <polyline points="144,188 112,192 94,204" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="20" y="216" fill="#ffffff" fontSize="13" fontWeight="600">Triceps</text>
 
-                <polyline points="210,304 266,316 308,334" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="316" y="342" fill="#a5f3fc" fontSize="13" fontWeight="600">Glutes</text>
+                <polyline points="228,296 272,304 314,320" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="320" y="330" fill="#ffffff" fontSize="13" fontWeight="600">Glutes</text>
 
-                <polyline points="242,430 290,436 326,452" fill="none" stroke="#67e8f9" strokeWidth="2" />
-                <text x="298" y="474" fill="#a5f3fc" fontSize="13" fontWeight="600">Hamstrings</text>
+                <polyline points="242,418 286,424 324,438" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="268" y="458" fill="#ffffff" fontSize="13" fontWeight="600">Hamstrings</text>
+
+                <polyline points="242,516 286,528 324,546" fill="none" stroke="#ffffff" strokeWidth="2" />
+                <text x="300" y="566" fill="#ffffff" fontSize="13" fontWeight="600">Calves</text>
               </svg>
             </div>
           </article>
