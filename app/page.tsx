@@ -3,13 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Holidays from "date-holidays";
-import type { WorkoutDay } from "@/lib/generateWorkout";
-import WorkoutProgressWidget from "./_components/workout-progress-widget";
 
 const INTRO_SEEN_STORAGE_KEY = "homeIntroSeen:v1";
 const HOME_CALENDAR_STORAGE_KEY = "homeCalendarCompletedDates:v1";
-const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
 
 type CalendarCell = {
   date: number;
@@ -144,46 +140,6 @@ export default function HomePage() {
       return new Set();
     }
   });
-  const [exercisePageProgressPercent, setExercisePageProgressPercent] = useState(() => {
-    if (typeof window === "undefined") {
-      return 0;
-    }
-
-    try {
-      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-      if (!storedWorkout || !storedCompleted) {
-        return 0;
-      }
-
-      const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-      const parsedCompleted = JSON.parse(storedCompleted) as string[];
-      if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-        return 0;
-      }
-
-      const completedSet = new Set(parsedCompleted);
-      for (const day of parsedWorkout) {
-        if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-          continue;
-        }
-
-        const completedCount = day.exercises.filter((exercise) =>
-          completedSet.has(`${day.day}-${exercise}`)
-        ).length;
-        const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-        const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-        if (isInProgress) {
-          return dayPercent;
-        }
-      }
-
-      return 0;
-    } catch {
-      return 0;
-    }
-  });
 
   useEffect(() => {
     try {
@@ -211,52 +167,6 @@ export default function HomePage() {
       // Ignore storage read/write failures.
     }
   }, [showIntro]);
-
-  useEffect(() => {
-    const calculateInProgressPercent = (): number => {
-      try {
-        const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-        const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-        if (!storedWorkout || !storedCompleted) {
-          return 0;
-        }
-
-        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-        const parsedCompleted = JSON.parse(storedCompleted) as string[];
-        if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-          return 0;
-        }
-
-        const completedSet = new Set(parsedCompleted);
-        for (const day of parsedWorkout) {
-          if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-            continue;
-          }
-
-          const completedCount = day.exercises.filter((exercise) =>
-            completedSet.has(`${day.day}-${exercise}`)
-          ).length;
-          const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-          const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-          if (isInProgress) {
-            return dayPercent;
-          }
-        }
-
-        return 0;
-      } catch {
-        return 0;
-      }
-    };
-
-    const handleStorageUpdate = () => {
-      setExercisePageProgressPercent(calculateInProgressPercent());
-    };
-
-    window.addEventListener("storage", handleStorageUpdate);
-    return () => window.removeEventListener("storage", handleStorageUpdate);
-  }, []);
 
   const calendarCells = getCurrentMonthCalendar(displayMonth, completedDates);
   const monthLabel = displayMonth.toLocaleDateString("en-US", {
@@ -326,13 +236,7 @@ export default function HomePage() {
             </details>
           </header>
 
-          <WorkoutProgressWidget
-            title="Current Workout Progress"
-            progressPercent={exercisePageProgressPercent}
-          />
-
           <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
-
             <div className="mb-6 flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold">Workout Tracker</h2>
