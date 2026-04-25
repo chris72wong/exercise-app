@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   createDefaultSharedState,
+  getFullBodyAndStretchProgressPercent,
   getCurrentWorkoutProgressPercent,
   type SharedAppState,
 } from "@/lib/sharedState";
@@ -28,12 +29,12 @@ function MuscleLabel({ points, x, y, children, textAnchor = "start" }: MuscleLab
       <polyline
         points={points}
         fill="none"
-        stroke="#ffffff"
+        stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
       />
-      <text x={x} y={y} fill="#ffffff" fontSize="13" fontWeight="600" textAnchor={textAnchor}>
+      <text x={x} y={y} fill="currentColor" fontSize="13" fontWeight="600" textAnchor={textAnchor}>
         {children}
       </text>
     </>
@@ -44,7 +45,7 @@ function FrontMuscleDiagram() {
   return (
     <svg
       viewBox="0 0 420 620"
-      className="mx-auto w-full max-w-[420px]"
+      className="mx-auto w-full max-w-[420px] text-white"
       role="img"
       aria-label="Front body muscle diagram"
     >
@@ -64,7 +65,7 @@ function FrontMuscleDiagram() {
         </linearGradient>
       </defs>
 
-      <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
+      <text x="210" y="36" textAnchor="middle" fill="currentColor" fontSize="20" fontWeight="700" opacity="0.95">
         FRONT
       </text>
 
@@ -145,7 +146,7 @@ function BackMuscleDiagram() {
   return (
     <svg
       viewBox="0 0 420 620"
-      className="mx-auto w-full max-w-[420px]"
+      className="mx-auto w-full max-w-[420px] text-white"
       role="img"
       aria-label="Back body muscle diagram"
     >
@@ -165,7 +166,7 @@ function BackMuscleDiagram() {
         </linearGradient>
       </defs>
 
-      <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
+      <text x="210" y="36" textAnchor="middle" fill="currentColor" fontSize="20" fontWeight="700" opacity="0.95">
         BACK
       </text>
 
@@ -266,14 +267,23 @@ export default function BodybuildingDiagramPage() {
     sharedState.workout,
     sharedState.completedExercises
   );
+  const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent(sharedState);
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
-        <WorkoutProgressWidget
-          title="Current Workout Progress"
-          progressPercent={currentWorkoutProgressPercent}
-        />
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <WorkoutProgressWidget
+            title="Progress Bar 1"
+            progressPercent={currentWorkoutProgressPercent}
+            variant="blue"
+          />
+          <WorkoutProgressWidget
+            title="Progress Bar 2"
+            progressPercent={fullBodyProgressPercent}
+            variant="red"
+          />
+        </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">

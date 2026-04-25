@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   createDefaultSharedState,
+  getFullBodyAndStretchProgressPercent,
   getCurrentWorkoutProgressPercent,
   type SharedAppState,
   type SharedAppStatePatch,
@@ -95,8 +96,10 @@ export default function Page() {
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
 
   const applySharedState = useCallback((state: SharedAppState) => {
+    setSharedState(state);
     setWorkout(getSortedWorkout(state.workout));
     setCompletedExercises(new Set(state.completedExercises));
   }, []);
@@ -131,6 +134,7 @@ export default function Page() {
     workout,
     completedExercises
   );
+  const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent(sharedState);
 
   const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
 
@@ -347,15 +351,27 @@ export default function Page() {
           </div>
 
           <div className="flex-1 self-center">
-            <div className="mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
-              <span>{progressPercent}%</span>
-            </div>
-
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div
+              className={`progress-blue relative h-3 w-full overflow-visible rounded-full bg-neutral-800 ${
+                progressPercent > 0 ? "progress-track-glow" : ""
+              }`}
+            >
               <div
-                className="h-full rounded-full bg-emerald-400 transition-all duration-200"
+                className={`relative h-full rounded-full transition-all duration-300 ${
+                  progressPercent > 0 ? "progress-fill-glow" : ""
+                }`}
                 style={{ width: `${progressPercent}%` }}
               />
+              <span
+                className={`pointer-events-none absolute bottom-full mb-0.5 text-[11px] font-semibold tracking-wide transition-all ${
+                  progressPercent > 0 ? "progress-label-glow" : "text-neutral-500"
+                }`}
+                style={{
+                  left: `clamp(0%, calc(${progressPercent}% - 1.25rem), calc(100% - 2.5rem))`,
+                }}
+              >
+                {progressPercent}%
+              </span>
             </div>
           </div>
 
@@ -475,10 +491,18 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <WorkoutProgressWidget
-          title="Current Workout Progress"
-          progressPercent={currentWorkoutProgressPercent}
-        />
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <WorkoutProgressWidget
+            title="Progress Bar 1"
+            progressPercent={currentWorkoutProgressPercent}
+            variant="blue"
+          />
+          <WorkoutProgressWidget
+            title="Progress Bar 2"
+            progressPercent={fullBodyProgressPercent}
+            variant="red"
+          />
+        </div>
 
         <div className="mb-8 flex flex-wrap gap-3">
           <button

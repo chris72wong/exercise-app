@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import {
   createDefaultSharedState,
-  fullBodyExercisePool,
+  generateFullBodyWorkout,
+  getFullBodyAndStretchProgressPercent,
+  getFullBodyExerciseMuscleGroup,
   getCurrentWorkoutProgressPercent,
+  stretchChecklistItems,
   type SharedAppState,
   type SharedAppStatePatch,
 } from "@/lib/sharedState";
@@ -16,18 +19,6 @@ import {
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
 const DEFAULT_SHARED_STATE = createDefaultSharedState();
-
-const stretchChecklistItems = [
-  "Standing Quad Stretch",
-  "Standing Calf Stretch",
-  "Seated Single-Leg Hamstring Stretch (Left)",
-  "Seated Single-Leg Hamstring Stretch (Right)",
-  "Single Knee-to-Chest Stretch (Left)",
-  "Single Knee-to-Chest Stretch (Right)",
-  "Seated Butterfly Stretch",
-  "Supine Figure-Four Stretch (Left)",
-  "Supine Figure-Four Stretch (Right)",
-];
 
 type StretchPose =
   | "standing-quad"
@@ -42,8 +33,7 @@ type StretchReferenceIllustrationProps = {
 };
 
 function pickRandomExercises(count: number): string[] {
-  const shuffled = [...fullBodyExercisePool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, count);
+  return generateFullBodyWorkout().slice(0, count);
 }
 
 function getPercent(complete: number, total: number): number {
@@ -188,7 +178,7 @@ function CardProgressBar({ percent }: CardProgressBarProps) {
   return (
     <div className="mt-3 w-full">
       <div
-        className={`relative h-3 w-full overflow-visible rounded-full bg-neutral-800 ${
+        className={`progress-red relative h-3 w-full overflow-visible rounded-full bg-neutral-800 ${
           hasProgress ? "progress-track-glow" : ""
         }`}
       >
@@ -201,7 +191,7 @@ function CardProgressBar({ percent }: CardProgressBarProps) {
 
         <span
           className={`pointer-events-none absolute bottom-full mb-0.5 text-[11px] font-semibold tracking-wide transition-all ${
-            hasProgress ? "text-emerald-300 progress-label-glow" : "text-neutral-500"
+            hasProgress ? "progress-label-glow" : "text-neutral-500"
           }`}
           style={{
             left: `clamp(0%, calc(${percent}% - 1.25rem), calc(100% - 2.5rem))`,
@@ -261,6 +251,12 @@ export default function HelpToolsPage() {
     sharedState.workout,
     sharedState.completedExercises
   );
+  const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent({
+    ...sharedState,
+    generatedFullBodyWorkout: generatedWorkout,
+    completedFullBodyExercises: [...completedWorkout],
+    completedStretches: [...completedStretches],
+  });
   const workoutProgressPercent = getPercent(completedWorkout.size, generatedWorkout.length);
   const stretchProgressPercent = getPercent(completedStretches.size, stretchChecklistItems.length);
 
@@ -327,10 +323,18 @@ export default function HelpToolsPage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
-        <WorkoutProgressWidget
-          title="Current Workout Progress"
-          progressPercent={currentWorkoutProgressPercent}
-        />
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <WorkoutProgressWidget
+            title="Progress Bar 1"
+            progressPercent={currentWorkoutProgressPercent}
+            variant="blue"
+          />
+          <WorkoutProgressWidget
+            title="Progress Bar 2"
+            progressPercent={fullBodyProgressPercent}
+            variant="red"
+          />
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
@@ -367,6 +371,7 @@ export default function HelpToolsPage() {
             <ul className="space-y-3">
               {generatedWorkout.map((exercise) => {
                 const complete = completedWorkout.has(exercise);
+                const muscleGroup = getFullBodyExerciseMuscleGroup(exercise);
 
                 return (
                   <li
@@ -388,6 +393,11 @@ export default function HelpToolsPage() {
 
                     <span className={complete ? "text-neutral-500 line-through" : "text-neutral-200"}>
                       {exercise}
+                      {muscleGroup && (
+                        <span className="ml-2 text-xs italic text-neutral-400">
+                          {muscleGroup}
+                        </span>
+                      )}
                     </span>
                   </li>
                 );
