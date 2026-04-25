@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import SyncStatusBanner from "./_components/sync-status-banner";
 import ThemeToggle from "./_components/theme-toggle";
 import "./globals.css";
 
@@ -119,6 +120,7 @@ export default function RootLayout({
             <ThemeToggle />
           </nav>
         </header>
+        <SyncStatusBanner />
         {children}
       </body>
     </html>
