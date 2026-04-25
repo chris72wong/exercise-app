@@ -4,9 +4,12 @@ import type { WorkoutDay } from "@/lib/generateWorkout";
 export const SHARED_STATE_ID = "global";
 export const FULL_BODY_WORKOUT_SIZE = 6;
 
+export type CalendarActivity = "cardio" | "weights";
+export type CalendarActivitiesByDate = Record<string, CalendarActivity[]>;
+
 export type FullBodyExercise = {
   name: string;
-  muscleGroup: "Legs" | "Back" | "Shoulders";
+  muscleGroup: "Legs" | "Back" | "Shoulders" | "Chest";
   movementPattern: string;
   equipment: string;
   type: string;
@@ -17,6 +20,7 @@ export type SharedAppState = {
   workout: WorkoutDay[];
   completedExercises: string[];
   completedDates: string[];
+  calendarActivities: CalendarActivitiesByDate;
   generatedFullBodyWorkout: string[];
   completedFullBodyExercises: string[];
   completedStretches: string[];
@@ -97,11 +101,14 @@ export function generateFullBodyWorkout(): string[] {
   return [
     ...pick("Legs", 3),
     ...pick("Back", 1),
-    ...pick("Shoulders", 2),
+    ...pick("Shoulders", 1),
+    ...pick("Chest", 1),
   ];
 }
 
-export function getFullBodyExerciseMuscleGroup(exerciseName: string): string | undefined {
+export function getFullBodyExerciseMuscleGroup(
+  exerciseName: string
+): FullBodyExercise["muscleGroup"] | undefined {
   return fullBodyExercisePool.find((exercise) => exercise.name === exerciseName)?.muscleGroup;
 }
 
@@ -110,13 +117,14 @@ export function createDefaultSharedState(): SharedAppState {
     workout: DEFAULT_WORKOUT,
     completedExercises: [],
     completedDates: [],
+    calendarActivities: {},
     generatedFullBodyWorkout: [
       "Goblet Squat",
       "Romanian Deadlift",
       "Walking Lunge",
       "Pull Up",
       "Barbell Overhead Press",
-      "Dumbbell Shoulder Press",
+      "Barbell Bench Press",
     ],
     completedFullBodyExercises: [],
     completedStretches: [],
@@ -129,6 +137,40 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isCalendarActivity(value: unknown): value is CalendarActivity {
+  return value === "cardio" || value === "weights";
+}
+
+function normalizeCalendarActivitiesMap(value: unknown): CalendarActivitiesByDate | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const next: CalendarActivitiesByDate = {};
+  const orderedActivities: CalendarActivity[] = ["cardio", "weights"];
+
+  for (const [dateKey, activities] of Object.entries(value)) {
+    if (!Array.isArray(activities)) {
+      continue;
+    }
+
+    const activitySet = new Set(activities.filter(isCalendarActivity));
+    const normalizedActivities = orderedActivities.filter((activity) =>
+      activitySet.has(activity)
+    );
+
+    if (normalizedActivities.length > 0) {
+      next[dateKey] = normalizedActivities;
+    }
+  }
+
+  return next;
+}
+
+function completedDatesToCalendarActivities(dates: string[]): CalendarActivitiesByDate {
+  return Object.fromEntries(dates.map((date) => [date, ["weights"] as CalendarActivity[]]));
 }
 
 function isWorkoutDay(value: unknown): value is WorkoutDay {
@@ -147,26 +189,79 @@ function isWorkout(value: unknown): value is WorkoutDay[] {
   return Array.isArray(value) && value.every(isWorkoutDay);
 }
 
+function hasExpectedFullBodyComposition(exerciseNames: string[]): boolean {
+  const counts: Record<FullBodyExercise["muscleGroup"], number> = {
+    Legs: 0,
+    Back: 0,
+    Shoulders: 0,
+    Chest: 0,
+  };
+
+  for (const exerciseName of exerciseNames) {
+    const muscleGroup = getFullBodyExerciseMuscleGroup(exerciseName);
+    if (!muscleGroup) {
+      return false;
+    }
+
+    counts[muscleGroup] += 1;
+  }
+
+  return (
+    counts.Legs === 3 &&
+    counts.Back === 1 &&
+    counts.Shoulders === 1 &&
+    counts.Chest === 1
+  );
+}
+
+function normalizeGeneratedFullBodyWorkout(
+  value: unknown,
+  fallback: string[]
+): string[] {
+  if (!isStringArray(value)) {
+    return fallback;
+  }
+
+  const hasDuplicates = new Set(value).size !== value.length;
+  if (value.length !== FULL_BODY_WORKOUT_SIZE || hasDuplicates) {
+    return fallback;
+  }
+
+  return hasExpectedFullBodyComposition(value) ? value : fallback;
+}
+
 export function normalizeSharedState(value: unknown): SharedAppState {
   const fallback = createDefaultSharedState();
   if (!isRecord(value)) {
     return fallback;
   }
 
+  const completedDates = isStringArray(value.completedDates)
+    ? value.completedDates
+    : fallback.completedDates;
+  const calendarActivities =
+    normalizeCalendarActivitiesMap(value.calendarActivities) ??
+    completedDatesToCalendarActivities(completedDates);
+  const generatedFullBodyWorkout = normalizeGeneratedFullBodyWorkout(
+    value.generatedFullBodyWorkout,
+    fallback.generatedFullBodyWorkout
+  );
+  const generatedFullBodyWorkoutSet = new Set(generatedFullBodyWorkout);
+  const completedFullBodyExercises = isStringArray(value.completedFullBodyExercises)
+    ? [...new Set(value.completedFullBodyExercises)].filter((exerciseName) =>
+        generatedFullBodyWorkoutSet.has(exerciseName)
+      )
+    : fallback.completedFullBodyExercises;
+
   return {
     workout: isWorkout(value.workout) ? value.workout : fallback.workout,
     completedExercises: isStringArray(value.completedExercises)
       ? value.completedExercises
       : fallback.completedExercises,
-    completedDates: isStringArray(value.completedDates)
-      ? value.completedDates
-      : fallback.completedDates,
-    generatedFullBodyWorkout: isStringArray(value.generatedFullBodyWorkout)
-      ? value.generatedFullBodyWorkout
-      : fallback.generatedFullBodyWorkout,
-    completedFullBodyExercises: isStringArray(value.completedFullBodyExercises)
-      ? value.completedFullBodyExercises
-      : fallback.completedFullBodyExercises,
+    completedDates,
+    calendarActivities,
+    generatedFullBodyWorkout,
+    completedFullBodyExercises,
     completedStretches: isStringArray(value.completedStretches)
       ? value.completedStretches
       : fallback.completedStretches,
@@ -192,8 +287,16 @@ export function normalizeSharedStatePatch(value: unknown): SharedAppStatePatch {
     patch.completedDates = value.completedDates;
   }
 
+  const calendarActivities = normalizeCalendarActivitiesMap(value.calendarActivities);
+  if (calendarActivities) {
+    patch.calendarActivities = calendarActivities;
+  }
+
   if (isStringArray(value.generatedFullBodyWorkout)) {
-    patch.generatedFullBodyWorkout = value.generatedFullBodyWorkout;
+    patch.generatedFullBodyWorkout = normalizeGeneratedFullBodyWorkout(
+      value.generatedFullBodyWorkout,
+      createDefaultSharedState().generatedFullBodyWorkout
+    );
   }
 
   if (isStringArray(value.completedFullBodyExercises)) {
