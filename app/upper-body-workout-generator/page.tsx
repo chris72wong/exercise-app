@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  generate4DaySplit,
+  createDefaultSharedState,
+  getCurrentWorkoutProgressPercent,
+  type SharedAppState,
+  type SharedAppStatePatch,
+} from "@/lib/sharedState";
+import {
+  loadSharedState,
+  saveSharedStatePatch,
+  subscribeToSharedState,
+} from "@/lib/sharedStateClient";
+import {
   regeneratePushDays,
   regeneratePullDays,
   type WorkoutDay,
@@ -10,8 +20,7 @@ import {
 import { exercises } from "@/data/exercises";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
-const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
+const DEFAULT_SHARED_STATE = createDefaultSharedState();
 
 type DragState = {
   dayName: string;
@@ -37,6 +46,7 @@ function getMuscleGroupSortOrder(muscleGroup: string, focus: "Push" | "Pull"): n
     Back: 1,
     Biceps: 2,
     Traps: 3,
+    Abs: 4,
   };
 
   return pullOrder[muscleGroup] ?? 999;
@@ -61,6 +71,13 @@ function sortExercisesByMuscleGroup(
   });
 }
 
+function getSortedWorkout(days: WorkoutDay[]): WorkoutDay[] {
+  return days.map((day) => ({
+    ...day,
+    exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
+  }));
+}
+
 function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
   const next = [...items];
   const [movedItem] = next.splice(fromIndex, 1);
@@ -69,95 +86,51 @@ function moveItem<T>(items: T[], fromIndex: number, toIndex: number): T[] {
 }
 
 export default function Page() {
-  const [workout, setWorkout] = useState<WorkoutDay[]>(() => {
-    const getSortedWorkout = (days: WorkoutDay[]): WorkoutDay[] =>
-      days.map((day) => ({
-        ...day,
-        exercises: sortExercisesByMuscleGroup(day.exercises, day.focus),
-      }));
-
-    if (typeof window === "undefined") {
-      return getSortedWorkout(generate4DaySplit());
-    }
-
-    try {
-      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-      if (storedWorkout) {
-        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-        if (Array.isArray(parsedWorkout)) {
-          return getSortedWorkout(parsedWorkout);
-        }
-      }
-    } catch {
-      // Ignore malformed localStorage values and regenerate plan.
-    }
-
-    return getSortedWorkout(generate4DaySplit());
-  });
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") {
-      return new Set();
-    }
-
-    try {
-      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-      if (!storedCompleted) {
-        return new Set();
-      }
-
-      const parsedCompleted = JSON.parse(storedCompleted) as string[];
-      if (!Array.isArray(parsedCompleted)) {
-        return new Set();
-      }
-
-      return new Set(parsedCompleted);
-    } catch {
-      return new Set();
-    }
-  });
+  const [workout, setWorkout] = useState<WorkoutDay[]>(() =>
+    getSortedWorkout(DEFAULT_SHARED_STATE.workout)
+  );
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(
+    () => new Set(DEFAULT_SHARED_STATE.completedExercises)
+  );
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<DragState>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(WORKOUT_STORAGE_KEY, JSON.stringify(workout));
-    } catch {
-      // Ignore storage write failures.
-    }
-  }, [workout]);
+  const applySharedState = useCallback((state: SharedAppState) => {
+    setWorkout(getSortedWorkout(state.workout));
+    setCompletedExercises(new Set(state.completedExercises));
+  }, []);
+
+  const persistSharedState = (patch: SharedAppStatePatch) => {
+    void saveSharedStatePatch(patch).catch(() => {});
+  };
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        WORKOUT_COMPLETED_STORAGE_KEY,
-        JSON.stringify([...completedExercises])
-      );
-    } catch {
-      // Ignore storage write failures.
-    }
-  }, [completedExercises]);
+    let active = true;
+
+    void loadSharedState().then((state) => {
+      if (active && state) {
+        applySharedState(state);
+      }
+    });
+
+    const unsubscribe = subscribeToSharedState((state) => {
+      applySharedState(state);
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [applySharedState]);
 
   const pushDays = workout.filter((day) => day.focus === "Push");
   const pullDays = workout.filter((day) => day.focus === "Pull");
 
-  const currentWorkoutProgressPercent = workout.reduce<number>((foundPercent, day) => {
-    if (foundPercent > 0) {
-      return foundPercent;
-    }
-
-    if (day.exercises.length === 0) {
-      return 0;
-    }
-
-    const completedCount = day.exercises.filter((exercise) =>
-      completedExercises.has(`${day.day}-${exercise}`)
-    ).length;
-    const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-    const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-    return isInProgress ? dayPercent : 0;
-  }, 0);
+  const currentWorkoutProgressPercent = getCurrentWorkoutProgressPercent(
+    workout,
+    completedExercises
+  );
 
   const getExerciseKey = (dayName: string, exerciseName: string) => `${dayName}-${exerciseName}`;
 
@@ -182,26 +155,22 @@ export default function Page() {
 
   const toggleWorkoutCard = (day: WorkoutDay) => {
     const complete = isDayComplete(day);
+    const next = new Set(completedExercises);
 
     if (complete) {
-      setCompletedExercises((prev) => {
-        const next = new Set(prev);
-        for (const exercise of day.exercises) {
-          next.delete(getExerciseKey(day.day, exercise));
-        }
-        return next;
-      });
+      for (const exercise of day.exercises) {
+        next.delete(getExerciseKey(day.day, exercise));
+      }
+      setCompletedExercises(next);
+      persistSharedState({ completedExercises: [...next] });
       return;
     }
 
-    setCompletedExercises((prev) => {
-      const next = new Set(prev);
-      for (const exercise of day.exercises) {
-        next.add(getExerciseKey(day.day, exercise));
-      }
-      return next;
-    });
-
+    for (const exercise of day.exercises) {
+      next.add(getExerciseKey(day.day, exercise));
+    }
+    setCompletedExercises(next);
+    persistSharedState({ completedExercises: [...next] });
   };
 
   const handleReplaceExercise = (
@@ -209,46 +178,52 @@ export default function Page() {
     exerciseIndex: number,
     newExerciseName: string
   ) => {
-    setWorkout((prev) =>
-      prev.map((day) => {
-        if (day.day !== dayName) {
-          return day;
-        }
+    const currentDay = workout.find((day) => day.day === dayName);
+    const previousExercise = currentDay?.exercises[exerciseIndex];
+    if (!currentDay || !previousExercise) {
+      return;
+    }
 
-        const nextExercises = [...day.exercises];
-        const previousExercise = nextExercises[exerciseIndex];
-        nextExercises[exerciseIndex] = newExerciseName;
+    const nextWorkout = workout.map((day) => {
+      if (day.day !== dayName) {
+        return day;
+      }
 
-        setCompletedExercises((current) => {
-          const next = new Set(current);
-          next.delete(getExerciseKey(dayName, previousExercise));
-          next.delete(getExerciseKey(dayName, newExerciseName));
-          return next;
-        });
+      const nextExercises = [...day.exercises];
+      nextExercises[exerciseIndex] = newExerciseName;
 
-        return {
-          ...day,
-          exercises: nextExercises,
-        };
-      })
-    );
+      return {
+        ...day,
+        exercises: nextExercises,
+      };
+    });
+
+    const nextCompleted = new Set(completedExercises);
+    nextCompleted.delete(getExerciseKey(dayName, previousExercise));
+    nextCompleted.delete(getExerciseKey(dayName, newExerciseName));
+
+    setWorkout(nextWorkout);
+    setCompletedExercises(nextCompleted);
+    persistSharedState({
+      workout: nextWorkout,
+      completedExercises: [...nextCompleted],
+    });
 
     setOpenMenuKey(null);
   };
 
   const toggleExerciseComplete = (dayName: string, exerciseName: string) => {
     const key = getExerciseKey(dayName, exerciseName);
+    const next = new Set(completedExercises);
 
-    setCompletedExercises((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
 
-      return next;
-    });
+    setCompletedExercises(next);
+    persistSharedState({ completedExercises: [...next] });
   };
 
   useEffect(() => {
@@ -266,30 +241,40 @@ export default function Page() {
   }, [openMenuKey]);
 
   const handleGeneratePushDays = () => {
-    setCompletedExercises(new Set());
+    const nextCompleted = new Set<string>();
     setDraggedItem(null);
     setDragOverKey(null);
-    setWorkout((prev) => {
-      const updated = regeneratePushDays(prev);
-      return updated.map((day) =>
-        day.focus === "Push"
-          ? { ...day, exercises: sortExercisesByMuscleGroup(day.exercises, "Push") }
-          : day
-      );
+    const updated = regeneratePushDays(workout);
+    const nextWorkout = updated.map((day) =>
+      day.focus === "Push"
+        ? { ...day, exercises: sortExercisesByMuscleGroup(day.exercises, "Push") }
+        : day
+    );
+
+    setCompletedExercises(nextCompleted);
+    setWorkout(nextWorkout);
+    persistSharedState({
+      workout: nextWorkout,
+      completedExercises: [...nextCompleted],
     });
   };
 
   const handleGeneratePullDays = () => {
-    setCompletedExercises(new Set());
+    const nextCompleted = new Set<string>();
     setDraggedItem(null);
     setDragOverKey(null);
-    setWorkout((prev) => {
-      const updated = regeneratePullDays(prev);
-      return updated.map((day) =>
-        day.focus === "Pull"
-          ? { ...day, exercises: sortExercisesByMuscleGroup(day.exercises, "Pull") }
-          : day
-      );
+    const updated = regeneratePullDays(workout);
+    const nextWorkout = updated.map((day) =>
+      day.focus === "Pull"
+        ? { ...day, exercises: sortExercisesByMuscleGroup(day.exercises, "Pull") }
+        : day
+    );
+
+    setCompletedExercises(nextCompleted);
+    setWorkout(nextWorkout);
+    persistSharedState({
+      workout: nextWorkout,
+      completedExercises: [...nextCompleted],
     });
   };
 
@@ -313,25 +298,26 @@ export default function Page() {
       return;
     }
 
-    setWorkout((prev) =>
-      prev.map((day) => {
-        if (day.day !== dayName) {
-          return day;
-        }
+    const nextWorkout = workout.map((day) => {
+      if (day.day !== dayName) {
+        return day;
+      }
 
-        const sourceIndex = day.exercises.indexOf(draggedItem.exerciseName);
-        const targetIndex = day.exercises.indexOf(targetExerciseName);
+      const sourceIndex = day.exercises.indexOf(draggedItem.exerciseName);
+      const targetIndex = day.exercises.indexOf(targetExerciseName);
 
-        if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
-          return day;
-        }
+      if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
+        return day;
+      }
 
-        return {
-          ...day,
-          exercises: moveItem(day.exercises, sourceIndex, targetIndex),
-        };
-      })
-    );
+      return {
+        ...day,
+        exercises: moveItem(day.exercises, sourceIndex, targetIndex),
+      };
+    });
+
+    setWorkout(nextWorkout);
+    persistSharedState({ workout: nextWorkout });
 
     setDraggedItem(null);
     setDragOverKey(null);

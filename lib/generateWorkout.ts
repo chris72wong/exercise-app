@@ -6,7 +6,14 @@ export type WorkoutDay = {
   exercises: string[];
 };
 
-type MuscleGroup = "Chest" | "Shoulders" | "Triceps" | "Back" | "Biceps" | "Traps";
+type MuscleGroup =
+  | "Chest"
+  | "Shoulders"
+  | "Triceps"
+  | "Back"
+  | "Biceps"
+  | "Traps"
+  | "Abs";
 type DayQuota = Partial<Record<MuscleGroup, number>>;
 
 const PUSH_QUOTA: DayQuota = {
@@ -19,6 +26,7 @@ const PULL_QUOTA: DayQuota = {
   Back: 2,
   Biceps: 2,
   Traps: 1,
+  Abs: 1,
 };
 
 function shuffle<T>(arr: T[]): T[] {
