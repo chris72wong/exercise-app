@@ -1,20 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DEFAULT_THEME, THEME_COLORS, THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 
-const THEME_STORAGE_KEY = "gymPartnerTheme:v1";
+function applyBrowserTheme(theme: ThemeName) {
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme = theme;
+
+  const themeColorMetas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
+  const themeColor = THEME_COLORS[theme];
+
+  if (themeColorMetas.length === 0) {
+    const themeColorMeta = document.createElement("meta");
+    themeColorMeta.name = "theme-color";
+    themeColorMeta.content = themeColor;
+    document.head.appendChild(themeColorMeta);
+  } else {
+    themeColorMetas.forEach((themeColorMeta) => {
+      themeColorMeta.content = themeColor;
+    });
+  }
+
+  let colorSchemeMeta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+  if (!colorSchemeMeta) {
+    colorSchemeMeta = document.createElement("meta");
+    colorSchemeMeta.name = "color-scheme";
+    document.head.appendChild(colorSchemeMeta);
+  }
+  colorSchemeMeta.content = theme;
+}
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
+  const [theme, setTheme] = useState<ThemeName>(() => {
     if (typeof window === "undefined") {
-      return "dark";
+      return DEFAULT_THEME;
     }
 
-    return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : DEFAULT_THEME;
   });
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    applyBrowserTheme(theme);
   }, [theme]);
 
   const toggleTheme = () => {

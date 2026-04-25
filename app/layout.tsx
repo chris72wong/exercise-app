@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
+import { DEFAULT_THEME, THEME_COLORS, THEME_STORAGE_KEY } from "@/lib/theme";
 import SyncStatusBanner from "./_components/sync-status-banner";
 import ThemeToggle from "./_components/theme-toggle";
 import "./globals.css";
@@ -19,6 +21,56 @@ export const metadata: Metadata = {
   title: "Gym Partner",
   description: "A good app for the gym",
 };
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
+    { color: THEME_COLORS.dark },
+  ],
+  colorScheme: "dark light",
+};
+
+const themeInitializerScript = `
+(() => {
+  const storageKey = ${JSON.stringify(THEME_STORAGE_KEY)};
+  const defaultTheme = ${JSON.stringify(DEFAULT_THEME)};
+  const colors = ${JSON.stringify(THEME_COLORS)};
+
+  function applyBrowserTheme(theme) {
+    const themeColor = colors[theme] || colors[defaultTheme];
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+
+    const themeColorMetas = document.querySelectorAll('meta[name="theme-color"]');
+    if (themeColorMetas.length === 0) {
+      const themeColorMeta = document.createElement("meta");
+      themeColorMeta.name = "theme-color";
+      themeColorMeta.content = themeColor;
+      document.head.appendChild(themeColorMeta);
+    } else {
+      themeColorMetas.forEach((themeColorMeta) => {
+        themeColorMeta.setAttribute("content", themeColor);
+      });
+    }
+
+    let colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+    if (!colorSchemeMeta) {
+      colorSchemeMeta = document.createElement("meta");
+      colorSchemeMeta.name = "color-scheme";
+      document.head.appendChild(colorSchemeMeta);
+    }
+    colorSchemeMeta.setAttribute("content", theme);
+  }
+
+  try {
+    const storedTheme = window.localStorage.getItem(storageKey);
+    applyBrowserTheme(storedTheme === "light" ? "light" : defaultTheme);
+  } catch {
+    applyBrowserTheme(defaultTheme);
+  }
+})();
+`;
 
 type NavigationItem = {
   href: string;
@@ -98,6 +150,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme={DEFAULT_THEME}
+      suppressHydrationWarning
+      style={{ colorScheme: DEFAULT_THEME }}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
@@ -122,6 +177,11 @@ export default function RootLayout({
         </header>
         <SyncStatusBanner />
         {children}
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitializerScript }}
+        />
       </body>
     </html>
   );
