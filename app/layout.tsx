@@ -20,15 +20,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gym Partner",
   description: "A good app for the gym",
+  appleWebApp: {
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: THEME_COLORS.light },
-    { media: "(prefers-color-scheme: dark)", color: THEME_COLORS.dark },
-    { color: THEME_COLORS.dark },
-  ],
+  themeColor: THEME_COLORS[DEFAULT_THEME],
   colorScheme: "dark light",
+  viewportFit: "cover",
 };
 
 const themeInitializerScript = `
