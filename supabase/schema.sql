@@ -4,6 +4,8 @@ create table if not exists public.app_state (
   updated_at timestamptz not null default now()
 );
 
+alter table public.app_state replica identity full;
+
 alter table public.app_state enable row level security;
 
 drop policy if exists "Public read app state" on public.app_state;
