@@ -10,10 +10,24 @@ import {
 
 const SHARED_STATE_STORAGE_KEY = "gymPartnerSharedState:v1";
 const SHARED_STATE_LOCAL_EVENT = "gymPartnerSharedState:local-update";
+const SHARED_STATE_SYNC_EVENT = "gymPartnerSharedState:sync-status";
 const SHARED_STATE_REMOTE_POLL_INTERVAL_MS = 3000;
 
 let browserClient: SupabaseClient | null = null;
 let pendingRemoteSaves = 0;
+
+export type SharedStateSyncStatus =
+  | {
+      status: "synced";
+    }
+  | {
+      status: "local-only";
+      message: string;
+    }
+  | {
+      status: "error";
+      message: string;
+    };
 
 function readLocalSharedState(): SharedAppState | null {
   if (typeof window === "undefined") {
@@ -47,6 +61,16 @@ function emitLocalSharedState(state: SharedAppState): void {
 
   window.dispatchEvent(
     new CustomEvent<SharedAppState>(SHARED_STATE_LOCAL_EVENT, { detail: state })
+  );
+}
+
+function emitSyncStatus(status: SharedStateSyncStatus): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<SharedStateSyncStatus>(SHARED_STATE_SYNC_EVENT, { detail: status })
   );
 }
 
@@ -87,10 +111,15 @@ export async function loadSharedState(): Promise<SharedAppState | null> {
     const remoteState = payload.state ? normalizeSharedState(payload.state) : null;
 
     if (payload.configured === false) {
+      emitSyncStatus({
+        status: "local-only",
+        message: "Cloud sync is not configured. Changes are only saved on this device.",
+      });
       return localState ?? remoteState;
     }
 
     if (remoteState) {
+      emitSyncStatus({ status: "synced" });
       return cacheSharedState(remoteState);
     }
 
@@ -123,6 +152,10 @@ export async function saveSharedStatePatch(patch: SharedAppStatePatch): Promise<
 
     if (!response.ok) {
       if (response.status === 503) {
+        emitSyncStatus({
+          status: "local-only",
+          message: "Cloud sync is not configured. Changes are only saved on this device.",
+        });
         return;
       }
 
@@ -132,6 +165,7 @@ export async function saveSharedStatePatch(patch: SharedAppStatePatch): Promise<
     const payload = (await response.json()) as { state?: unknown };
     if (payload.state) {
       const remoteState = cacheSharedState(normalizeSharedState(payload.state));
+      emitSyncStatus({ status: "synced" });
       emitLocalSharedState(remoteState);
     }
   } catch (error) {
@@ -206,10 +240,19 @@ export function subscribeToSharedState(
         configured?: boolean;
       };
 
-      if (payload.configured === false || !payload.state) {
+      if (payload.configured === false) {
+        emitSyncStatus({
+          status: "local-only",
+          message: "Cloud sync is not configured. Changes are only saved on this device.",
+        });
         return;
       }
 
+      if (!payload.state) {
+        return;
+      }
+
+      emitSyncStatus({ status: "synced" });
       applyRemoteState(normalizeSharedState(payload.state));
     } catch {
       // Realtime may still be connected; the next poll will retry.
@@ -258,5 +301,22 @@ export function subscribeToSharedState(
     window.removeEventListener(SHARED_STATE_LOCAL_EVENT, handleLocalState);
     window.removeEventListener("storage", handleStorage);
     void supabase.removeChannel(channel);
+  };
+}
+
+export function subscribeToSharedStateSyncStatus(
+  onStatusChange: (status: SharedStateSyncStatus) => void
+): () => void {
+  const handleStatusChange = (event: Event) => {
+    const status = (event as CustomEvent<SharedStateSyncStatus>).detail;
+    if (status) {
+      onStatusChange(status);
+    }
+  };
+
+  window.addEventListener(SHARED_STATE_SYNC_EVENT, handleStatusChange);
+
+  return () => {
+    window.removeEventListener(SHARED_STATE_SYNC_EVENT, handleStatusChange);
   };
 }
