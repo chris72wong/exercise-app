@@ -5,6 +5,7 @@ import Holidays from "date-holidays";
 import type { WorkoutDay } from "@/lib/generateWorkout";
 import {
   createDefaultSharedState,
+  getFullBodyAndStretchProgressPercent,
   getCurrentWorkoutProgressPercent,
   type SharedAppState,
   type SharedAppStatePatch,
@@ -90,8 +91,10 @@ export default function HomePage() {
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(
     () => new Set(DEFAULT_SHARED_STATE.completedExercises)
   );
+  const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
 
   const applySharedState = (state: SharedAppState) => {
+    setSharedState(state);
     setCompletedDates(new Set(state.completedDates));
     setWorkout(state.workout);
     setCompletedExercises(new Set(state.completedExercises));
@@ -125,6 +128,7 @@ export default function HomePage() {
     workout,
     completedExercises
   );
+  const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent(sharedState);
   const monthLabel = displayMonth.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
@@ -158,10 +162,18 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <div className="mx-auto flex w-full max-w-5xl flex-col px-6 py-8">
-        <WorkoutProgressWidget
-          title="Current Workout Progress"
-          progressPercent={exercisePageProgressPercent}
-        />
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <WorkoutProgressWidget
+            title="Progress Bar 1"
+            progressPercent={exercisePageProgressPercent}
+            variant="blue"
+          />
+          <WorkoutProgressWidget
+            title="Progress Bar 2"
+            progressPercent={fullBodyProgressPercent}
+            variant="red"
+          />
+        </div>
 
         <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between gap-4">

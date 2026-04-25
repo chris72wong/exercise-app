@@ -1,8 +1,17 @@
 import fullBodyExercises from "@/data/exercises/full-body.json";
-import { generate4DaySplit, type WorkoutDay } from "@/lib/generateWorkout";
+import type { WorkoutDay } from "@/lib/generateWorkout";
 
 export const SHARED_STATE_ID = "global";
 export const FULL_BODY_WORKOUT_SIZE = 6;
+
+export type FullBodyExercise = {
+  name: string;
+  muscleGroup: "Legs" | "Back" | "Shoulders";
+  movementPattern: string;
+  equipment: string;
+  type: string;
+  slotType: string;
+};
 
 export type SharedAppState = {
   workout: WorkoutDay[];
@@ -15,14 +24,100 @@ export type SharedAppState = {
 
 export type SharedAppStatePatch = Partial<SharedAppState>;
 
-export const fullBodyExercisePool = fullBodyExercises as string[];
+export const fullBodyExercisePool = fullBodyExercises as FullBodyExercise[];
+
+export const stretchChecklistItems = [
+  "Standing Quad Stretch",
+  "Standing Calf Stretch",
+  "Seated Single-Leg Hamstring Stretch",
+  "Single Knee-to-Chest Stretch",
+  "Seated Butterfly Stretch",
+  "Supine Figure-Four Stretch",
+];
+
+const DEFAULT_WORKOUT: WorkoutDay[] = [
+  {
+    day: "Day 1",
+    focus: "Push",
+    exercises: [
+      "Barbell Bench Press",
+      "Incline Dumbbell Press",
+      "Barbell Overhead Press",
+      "Lateral Raise",
+      "Tricep Pushdown",
+      "Overhead Tricep Extension",
+    ],
+  },
+  {
+    day: "Day 2",
+    focus: "Pull",
+    exercises: [
+      "Pull Up",
+      "Barbell Row",
+      "Barbell Curl",
+      "Hammer Curl",
+      "Barbell Shrug",
+      "Plank",
+    ],
+  },
+  {
+    day: "Day 3",
+    focus: "Push",
+    exercises: [
+      "Flat Dumbbell Press",
+      "Cable Fly",
+      "Dumbbell Shoulder Press",
+      "Cable Lateral Raise",
+      "Skull Crusher",
+      "Dumbbell Overhead Extension",
+    ],
+  },
+  {
+    day: "Day 4",
+    focus: "Pull",
+    exercises: [
+      "Lat Pulldown",
+      "Seated Cable Row",
+      "EZ Bar Curl",
+      "Cable Curl",
+      "Face Pull",
+      "Cable Crunch",
+    ],
+  },
+];
+
+export function generateFullBodyWorkout(): string[] {
+  const pick = (muscleGroup: FullBodyExercise["muscleGroup"], count: number) =>
+    [...fullBodyExercisePool]
+      .filter((exercise) => exercise.muscleGroup === muscleGroup && exercise.type === "Compound")
+      .sort(() => Math.random() - 0.5)
+      .slice(0, count)
+      .map((exercise) => exercise.name);
+
+  return [
+    ...pick("Legs", 3),
+    ...pick("Back", 1),
+    ...pick("Shoulders", 2),
+  ];
+}
+
+export function getFullBodyExerciseMuscleGroup(exerciseName: string): string | undefined {
+  return fullBodyExercisePool.find((exercise) => exercise.name === exerciseName)?.muscleGroup;
+}
 
 export function createDefaultSharedState(): SharedAppState {
   return {
-    workout: generate4DaySplit(),
+    workout: DEFAULT_WORKOUT,
     completedExercises: [],
     completedDates: [],
-    generatedFullBodyWorkout: fullBodyExercisePool.slice(0, FULL_BODY_WORKOUT_SIZE),
+    generatedFullBodyWorkout: [
+      "Goblet Squat",
+      "Romanian Deadlift",
+      "Walking Lunge",
+      "Pull Up",
+      "Barbell Overhead Press",
+      "Dumbbell Shoulder Press",
+    ],
     completedFullBodyExercises: [],
     completedStretches: [],
   };
@@ -136,4 +231,15 @@ export function getCurrentWorkoutProgressPercent(
   }
 
   return 0;
+}
+
+export function getFullBodyAndStretchProgressPercent(state: SharedAppState): number {
+  const total = state.generatedFullBodyWorkout.length + stretchChecklistItems.length;
+  if (total === 0) {
+    return 0;
+  }
+
+  return Math.round(
+    ((state.completedFullBodyExercises.length + state.completedStretches.length) / total) * 100
+  );
 }
