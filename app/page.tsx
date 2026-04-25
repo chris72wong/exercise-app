@@ -3,11 +3,20 @@
 import { useEffect, useState } from "react";
 import Holidays from "date-holidays";
 import type { WorkoutDay } from "@/lib/generateWorkout";
+import {
+  createDefaultSharedState,
+  getCurrentWorkoutProgressPercent,
+  type SharedAppState,
+  type SharedAppStatePatch,
+} from "@/lib/sharedState";
+import {
+  loadSharedState,
+  saveSharedStatePatch,
+  subscribeToSharedState,
+} from "@/lib/sharedStateClient";
 import WorkoutProgressWidget from "./_components/workout-progress-widget";
 
-const HOME_CALENDAR_STORAGE_KEY = "homeCalendarCompletedDates:v1";
-const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
+const DEFAULT_SHARED_STATE = createDefaultSharedState();
 
 type CalendarCell = {
   date: number;
@@ -74,123 +83,48 @@ function getCurrentMonthCalendar(displayMonth: Date, completedDates: Set<string>
 
 export default function HomePage() {
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
-  const [completedDates, setCompletedDates] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") {
-      return new Set();
-    }
+  const [completedDates, setCompletedDates] = useState<Set<string>>(
+    () => new Set(DEFAULT_SHARED_STATE.completedDates)
+  );
+  const [workout, setWorkout] = useState<WorkoutDay[]>(DEFAULT_SHARED_STATE.workout);
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(
+    () => new Set(DEFAULT_SHARED_STATE.completedExercises)
+  );
 
-    try {
-      const storedDates = window.localStorage.getItem(HOME_CALENDAR_STORAGE_KEY);
-      if (!storedDates) {
-        return new Set();
-      }
+  const applySharedState = (state: SharedAppState) => {
+    setCompletedDates(new Set(state.completedDates));
+    setWorkout(state.workout);
+    setCompletedExercises(new Set(state.completedExercises));
+  };
 
-      const parsedDates = JSON.parse(storedDates) as string[];
-      if (!Array.isArray(parsedDates)) {
-        return new Set();
-      }
-
-      return new Set(parsedDates);
-    } catch {
-      return new Set();
-    }
-  });
-  const [exercisePageProgressPercent, setExercisePageProgressPercent] = useState(() => {
-    if (typeof window === "undefined") {
-      return 0;
-    }
-
-    try {
-      const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-      const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-      if (!storedWorkout || !storedCompleted) {
-        return 0;
-      }
-
-      const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-      const parsedCompleted = JSON.parse(storedCompleted) as string[];
-      if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-        return 0;
-      }
-
-      const completedSet = new Set(parsedCompleted);
-      for (const day of parsedWorkout) {
-        if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-          continue;
-        }
-
-        const completedCount = day.exercises.filter((exercise) =>
-          completedSet.has(`${day.day}-${exercise}`)
-        ).length;
-        const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-        const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-        if (isInProgress) {
-          return dayPercent;
-        }
-      }
-
-      return 0;
-    } catch {
-      return 0;
-    }
-  });
+  const persistSharedState = (patch: SharedAppStatePatch) => {
+    void saveSharedStatePatch(patch).catch(() => {});
+  };
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(HOME_CALENDAR_STORAGE_KEY, JSON.stringify([...completedDates]));
-    } catch {
-      // Ignore storage write failures.
-    }
-  }, [completedDates]);
+    let active = true;
 
-  useEffect(() => {
-    const calculateInProgressPercent = (): number => {
-      try {
-        const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-        const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-        if (!storedWorkout || !storedCompleted) {
-          return 0;
-        }
-
-        const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-        const parsedCompleted = JSON.parse(storedCompleted) as string[];
-        if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-          return 0;
-        }
-
-        const completedSet = new Set(parsedCompleted);
-        for (const day of parsedWorkout) {
-          if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-            continue;
-          }
-
-          const completedCount = day.exercises.filter((exercise) =>
-            completedSet.has(`${day.day}-${exercise}`)
-          ).length;
-          const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-          const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-          if (isInProgress) {
-            return dayPercent;
-          }
-        }
-
-        return 0;
-      } catch {
-        return 0;
+    void loadSharedState().then((state) => {
+      if (active && state) {
+        applySharedState(state);
       }
-    };
+    });
 
-    const handleStorageUpdate = () => {
-      setExercisePageProgressPercent(calculateInProgressPercent());
-    };
+    const unsubscribe = subscribeToSharedState((state) => {
+      applySharedState(state);
+    });
 
-    window.addEventListener("storage", handleStorageUpdate);
-    return () => window.removeEventListener("storage", handleStorageUpdate);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   const calendarCells = getCurrentMonthCalendar(displayMonth, completedDates);
+  const exercisePageProgressPercent = getCurrentWorkoutProgressPercent(
+    workout,
+    completedExercises
+  );
   const monthLabel = displayMonth.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
@@ -209,17 +143,16 @@ export default function HomePage() {
   };
 
   const toggleCalendarDate = (dateKey: string) => {
-    setCompletedDates((prev) => {
-      const next = new Set(prev);
+    const next = new Set(completedDates);
 
-      if (next.has(dateKey)) {
-        next.delete(dateKey);
-      } else {
-        next.add(dateKey);
-      }
+    if (next.has(dateKey)) {
+      next.delete(dateKey);
+    } else {
+      next.add(dateKey);
+    }
 
-      return next;
-    });
+    setCompletedDates(next);
+    persistSharedState({ completedDates: [...next] });
   };
 
   return (

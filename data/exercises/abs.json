@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Plank",
+    "muscleGroup": "Abs",
+    "movementPattern": "Anti-Extension",
+    "equipment": "Bodyweight",
+    "type": "Isometric",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Hanging Knee Raise",
+    "muscleGroup": "Abs",
+    "movementPattern": "Hip Flexion",
+    "equipment": "Bodyweight",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Cable Crunch",
+    "muscleGroup": "Abs",
+    "movementPattern": "Spinal Flexion",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Ab Wheel Rollout",
+    "muscleGroup": "Abs",
+    "movementPattern": "Anti-Extension",
+    "equipment": "Ab Wheel",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Dead Bug",
+    "muscleGroup": "Abs",
+    "movementPattern": "Anti-Extension",
+    "equipment": "Bodyweight",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Pallof Press",
+    "muscleGroup": "Abs",
+    "movementPattern": "Anti-Rotation",
+    "equipment": "Cable",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  },
+  {
+    "name": "Reverse Crunch",
+    "muscleGroup": "Abs",
+    "movementPattern": "Posterior Pelvic Tilt",
+    "equipment": "Bodyweight",
+    "type": "Isolation",
+    "slotType": "Accessory"
+  }
+]

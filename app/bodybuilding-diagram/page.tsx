@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { WorkoutDay } from "@/lib/generateWorkout";
+import {
+  createDefaultSharedState,
+  getCurrentWorkoutProgressPercent,
+  type SharedAppState,
+} from "@/lib/sharedState";
+import {
+  loadSharedState,
+  subscribeToSharedState,
+} from "@/lib/sharedStateClient";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
-const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
+const DEFAULT_SHARED_STATE = createDefaultSharedState();
 
 type MuscleLabelProps = {
   points: string;
@@ -233,60 +240,32 @@ function BackMuscleDiagram() {
   );
 }
 
-function calculateCurrentWorkoutProgress(): number {
-  try {
-    const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-    const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-    if (!storedWorkout || !storedCompleted) {
-      return 0;
-    }
-
-    const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-    const parsedCompleted = JSON.parse(storedCompleted) as string[];
-    if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-      return 0;
-    }
-
-    const completedSet = new Set(parsedCompleted);
-    for (const day of parsedWorkout) {
-      if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-        continue;
-      }
-
-      const completedCount = day.exercises.filter((exercise) =>
-        completedSet.has(`${day.day}-${exercise}`)
-      ).length;
-      const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-      const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-      if (isInProgress) {
-        return dayPercent;
-      }
-    }
-
-    return 0;
-  } catch {
-    return 0;
-  }
-}
-
 export default function BodybuildingDiagramPage() {
-  const [currentWorkoutProgressPercent, setCurrentWorkoutProgressPercent] = useState(() => {
-    if (typeof window === "undefined") {
-      return 0;
-    }
-
-    return calculateCurrentWorkoutProgress();
-  });
+  const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
 
   useEffect(() => {
-    const handleStorageUpdate = () => {
-      setCurrentWorkoutProgressPercent(calculateCurrentWorkoutProgress());
-    };
+    let active = true;
 
-    window.addEventListener("storage", handleStorageUpdate);
-    return () => window.removeEventListener("storage", handleStorageUpdate);
+    void loadSharedState().then((state) => {
+      if (active && state) {
+        setSharedState(state);
+      }
+    });
+
+    const unsubscribe = subscribeToSharedState((state) => {
+      setSharedState(state);
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
+
+  const currentWorkoutProgressPercent = getCurrentWorkoutProgressPercent(
+    sharedState.workout,
+    sharedState.completedExercises
+  );
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
