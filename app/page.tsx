@@ -293,11 +293,19 @@ export default function HomePage() {
                 {cell ? (
                   <button
                     type="button"
-                    onClick={() => setSelectedDateKey(cell.dateKey)}
+                    onClick={() =>
+                      setSelectedDateKey((currentDateKey) =>
+                        currentDateKey === cell.dateKey ? null : cell.dateKey
+                      )
+                    }
                     className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
                       getCalendarCellActivityClasses(cell.activities, Boolean(cell.holidayName))
-                    } ${cell.isToday ? "ring-2 ring-emerald-400" : ""} ${
-                      selectedDateKey === cell.dateKey ? "ring-2 ring-cyan-300" : ""
+                    } ${
+                      selectedDateKey === cell.dateKey
+                        ? "calendar-date-selected"
+                        : cell.isToday
+                          ? "ring-2 ring-emerald-400"
+                          : ""
                     }`}
                     aria-label={`Open calendar options for ${cell.dateKey}`}
                   >

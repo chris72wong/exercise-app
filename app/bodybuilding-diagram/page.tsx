@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { exercises } from "@/data/exercises";
 import {
   createDefaultSharedState,
@@ -423,7 +423,7 @@ function MuscleExerciseMenu({ muscleGroup, onBack }: MuscleExerciseMenuProps) {
   const associatedExercises = getExercisesForMuscleGroup(muscleGroup);
 
   return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-emerald-400/30 bg-neutral-950/90 shadow-lg">
+    <div className="muscle-exercise-menu mt-4 overflow-hidden rounded-2xl border border-emerald-400/30 bg-neutral-950/90 shadow-lg">
       <button
         type="button"
         onClick={onBack}
@@ -467,6 +467,10 @@ function MuscleExerciseMenu({ muscleGroup, onBack }: MuscleExerciseMenuProps) {
 export default function BodybuildingDiagramPage() {
   const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
   const [activeSelection, setActiveSelection] = useState<ActiveMuscleSelection | null>(null);
+  const frontDiagramRef = useRef<HTMLDivElement>(null);
+  const backDiagramRef = useRef<HTMLDivElement>(null);
+  const frontMenuRef = useRef<HTMLDivElement>(null);
+  const backMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -497,6 +501,28 @@ export default function BodybuildingDiagramPage() {
   const selectedBackMuscleGroup =
     activeSelection?.side === "back" ? activeSelection.muscleGroup : null;
 
+  useEffect(() => {
+    if (!activeSelection) {
+      return;
+    }
+
+    const menuElement =
+      activeSelection.side === "front" ? frontMenuRef.current : backMenuRef.current;
+
+    window.requestAnimationFrame(() => {
+      menuElement?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [activeSelection]);
+
+  const closeExerciseMenu = (side: DiagramSide) => {
+    const diagramElement = side === "front" ? frontDiagramRef.current : backDiagramRef.current;
+
+    setActiveSelection(null);
+    window.requestAnimationFrame(() => {
+      diagramElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  };
+
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <section className="mx-auto w-full max-w-6xl px-6 py-10">
@@ -515,32 +541,36 @@ export default function BodybuildingDiagramPage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-            <div className="rounded-2xl bg-neutral-950/80 p-4">
+            <div ref={frontDiagramRef} className="rounded-2xl bg-neutral-950/80 p-4">
               <FrontMuscleDiagram
                 selectedMuscleGroup={selectedFrontMuscleGroup}
                 onSelect={(muscleGroup) => setActiveSelection({ side: "front", muscleGroup })}
               />
             </div>
             {selectedFrontMuscleGroup && (
-              <MuscleExerciseMenu
-                muscleGroup={selectedFrontMuscleGroup}
-                onBack={() => setActiveSelection(null)}
-              />
+              <div ref={frontMenuRef}>
+                <MuscleExerciseMenu
+                  muscleGroup={selectedFrontMuscleGroup}
+                  onBack={() => closeExerciseMenu("front")}
+                />
+              </div>
             )}
           </article>
 
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
-            <div className="rounded-2xl bg-neutral-950/80 p-4">
+            <div ref={backDiagramRef} className="rounded-2xl bg-neutral-950/80 p-4">
               <BackMuscleDiagram
                 selectedMuscleGroup={selectedBackMuscleGroup}
                 onSelect={(muscleGroup) => setActiveSelection({ side: "back", muscleGroup })}
               />
             </div>
             {selectedBackMuscleGroup && (
-              <MuscleExerciseMenu
-                muscleGroup={selectedBackMuscleGroup}
-                onBack={() => setActiveSelection(null)}
-              />
+              <div ref={backMenuRef}>
+                <MuscleExerciseMenu
+                  muscleGroup={selectedBackMuscleGroup}
+                  onBack={() => closeExerciseMenu("back")}
+                />
+              </div>
             )}
           </article>
         </div>
