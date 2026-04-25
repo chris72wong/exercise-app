@@ -1,26 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { WorkoutDay } from "@/lib/generateWorkout";
+import {
+  createDefaultSharedState,
+  fullBodyExercisePool,
+  getCurrentWorkoutProgressPercent,
+  type SharedAppState,
+  type SharedAppStatePatch,
+} from "@/lib/sharedState";
+import {
+  loadSharedState,
+  saveSharedStatePatch,
+  subscribeToSharedState,
+} from "@/lib/sharedStateClient";
 import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
-const WORKOUT_STORAGE_KEY = "workoutPlan:v1";
-const WORKOUT_COMPLETED_STORAGE_KEY = "workoutCompletedExercises:v1";
-
-const fullBodyExercisePool = [
-  "Goblet Squats",
-  "Push-Ups",
-  "Bent-Over Dumbbell Rows",
-  "Romanian Deadlifts",
-  "Walking Lunges",
-  "Overhead Press",
-  "Plank Hold",
-  "Glute Bridges",
-  "Mountain Climbers",
-  "Farmer Carries",
-];
-
-const initialFullBodyWorkout = fullBodyExercisePool.slice(0, 6);
+const DEFAULT_SHARED_STATE = createDefaultSharedState();
 
 const stretchChecklistItems = [
   "Standing Quad Stretch",
@@ -183,43 +178,6 @@ function StretchReferenceIllustration({ stretchName }: StretchReferenceIllustrat
 }
 
 
-function calculateCurrentWorkoutProgress(): number {
-  try {
-    const storedWorkout = window.localStorage.getItem(WORKOUT_STORAGE_KEY);
-    const storedCompleted = window.localStorage.getItem(WORKOUT_COMPLETED_STORAGE_KEY);
-    if (!storedWorkout || !storedCompleted) {
-      return 0;
-    }
-
-    const parsedWorkout = JSON.parse(storedWorkout) as WorkoutDay[];
-    const parsedCompleted = JSON.parse(storedCompleted) as string[];
-    if (!Array.isArray(parsedWorkout) || !Array.isArray(parsedCompleted)) {
-      return 0;
-    }
-
-    const completedSet = new Set(parsedCompleted);
-    for (const day of parsedWorkout) {
-      if (!Array.isArray(day.exercises) || day.exercises.length === 0) {
-        continue;
-      }
-
-      const completedCount = day.exercises.filter((exercise) =>
-        completedSet.has(`${day.day}-${exercise}`)
-      ).length;
-      const dayPercent = Math.round((completedCount / day.exercises.length) * 100);
-      const isInProgress = dayPercent > 0 && dayPercent < 100;
-
-      if (isInProgress) {
-        return dayPercent;
-      }
-    }
-
-    return 0;
-  } catch {
-    return 0;
-  }
-}
-
 type CardProgressBarProps = {
   percent: number;
 };
@@ -257,76 +215,113 @@ function CardProgressBar({ percent }: CardProgressBarProps) {
 }
 
 export default function HelpToolsPage() {
-  const [currentWorkoutProgressPercent, setCurrentWorkoutProgressPercent] = useState(() => {
-    if (typeof window === "undefined") {
-      return 0;
-    }
-
-    return calculateCurrentWorkoutProgress();
-  });
-  const [generatedWorkout, setGeneratedWorkout] = useState<string[]>(initialFullBodyWorkout);
-  const [completedWorkout, setCompletedWorkout] = useState<Set<string>>(new Set());
-  const [completedStretches, setCompletedStretches] = useState<Set<string>>(new Set());
+  const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
+  const [generatedWorkout, setGeneratedWorkout] = useState<string[]>(
+    DEFAULT_SHARED_STATE.generatedFullBodyWorkout
+  );
+  const [completedWorkout, setCompletedWorkout] = useState<Set<string>>(
+    () => new Set(DEFAULT_SHARED_STATE.completedFullBodyExercises)
+  );
+  const [completedStretches, setCompletedStretches] = useState<Set<string>>(
+    () => new Set(DEFAULT_SHARED_STATE.completedStretches)
+  );
   const [expandedStretch, setExpandedStretch] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleStorageUpdate = () => {
-      setCurrentWorkoutProgressPercent(calculateCurrentWorkoutProgress());
-    };
+  const applySharedState = (state: SharedAppState) => {
+    setSharedState(state);
+    setGeneratedWorkout(state.generatedFullBodyWorkout);
+    setCompletedWorkout(new Set(state.completedFullBodyExercises));
+    setCompletedStretches(new Set(state.completedStretches));
+  };
 
-    window.addEventListener("storage", handleStorageUpdate);
-    return () => window.removeEventListener("storage", handleStorageUpdate);
+  const persistSharedState = (patch: SharedAppStatePatch) => {
+    void saveSharedStatePatch(patch).catch(() => {});
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    void loadSharedState().then((state) => {
+      if (active && state) {
+        applySharedState(state);
+      }
+    });
+
+    const unsubscribe = subscribeToSharedState((state) => {
+      applySharedState(state);
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
+  const currentWorkoutProgressPercent = getCurrentWorkoutProgressPercent(
+    sharedState.workout,
+    sharedState.completedExercises
+  );
   const workoutProgressPercent = getPercent(completedWorkout.size, generatedWorkout.length);
   const stretchProgressPercent = getPercent(completedStretches.size, stretchChecklistItems.length);
 
   const toggleWorkoutExercise = (exercise: string) => {
-    setCompletedWorkout((current) => {
-      const next = new Set(current);
-      if (next.has(exercise)) {
-        next.delete(exercise);
-      } else {
-        next.add(exercise);
-      }
-      return next;
-    });
+    const next = new Set(completedWorkout);
+    if (next.has(exercise)) {
+      next.delete(exercise);
+    } else {
+      next.add(exercise);
+    }
+
+    setCompletedWorkout(next);
+    persistSharedState({ completedFullBodyExercises: [...next] });
   };
 
   const toggleStretch = (stretch: string) => {
-    setCompletedStretches((current) => {
-      const next = new Set(current);
-      if (next.has(stretch)) {
-        next.delete(stretch);
-      } else {
-        next.add(stretch);
-      }
-      return next;
-    });
+    const next = new Set(completedStretches);
+    if (next.has(stretch)) {
+      next.delete(stretch);
+    } else {
+      next.add(stretch);
+    }
+
+    setCompletedStretches(next);
+    persistSharedState({ completedStretches: [...next] });
   };
 
   const toggleWorkoutCard = () => {
     if (completedWorkout.size === generatedWorkout.length) {
-      setCompletedWorkout(new Set());
+      const next = new Set<string>();
+      setCompletedWorkout(next);
+      persistSharedState({ completedFullBodyExercises: [...next] });
       return;
     }
 
-    setCompletedWorkout(new Set(generatedWorkout));
+    const next = new Set(generatedWorkout);
+    setCompletedWorkout(next);
+    persistSharedState({ completedFullBodyExercises: [...next] });
   };
 
   const toggleStretchCard = () => {
     if (completedStretches.size === stretchChecklistItems.length) {
-      setCompletedStretches(new Set());
+      const next = new Set<string>();
+      setCompletedStretches(next);
+      persistSharedState({ completedStretches: [...next] });
       return;
     }
 
-    setCompletedStretches(new Set(stretchChecklistItems));
+    const next = new Set(stretchChecklistItems);
+    setCompletedStretches(next);
+    persistSharedState({ completedStretches: [...next] });
   };
 
   const handleGenerateWorkout = () => {
     const nextWorkout = pickRandomExercises(6);
     setGeneratedWorkout(nextWorkout);
     setCompletedWorkout(new Set());
+    persistSharedState({
+      generatedFullBodyWorkout: nextWorkout,
+      completedFullBodyExercises: [],
+    });
   };
 
   return (
