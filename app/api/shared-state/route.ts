@@ -8,6 +8,20 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, max-age=0",
+};
+
+function jsonResponse(body: unknown, init?: ResponseInit) {
+  return Response.json(body, {
+    ...init,
+    headers: {
+      ...NO_STORE_HEADERS,
+      ...init?.headers,
+    },
+  });
+}
+
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -70,9 +84,9 @@ async function getStoredState() {
 export async function GET() {
   try {
     const result = await getStoredState();
-    return Response.json(result);
+    return jsonResponse(result);
   } catch (error) {
-    return Response.json(
+    return jsonResponse(
       {
         error: error instanceof Error ? error.message : "Unable to load shared state.",
       },
@@ -84,7 +98,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
-    return Response.json(
+    return jsonResponse(
       { error: "Supabase environment variables are not configured." },
       { status: 503 }
     );
@@ -109,9 +123,9 @@ export async function PATCH(request: Request) {
       throw error;
     }
 
-    return Response.json({ state: nextState });
+    return jsonResponse({ state: nextState });
   } catch (error) {
-    return Response.json(
+    return jsonResponse(
       {
         error: error instanceof Error ? error.message : "Unable to save shared state.",
       },

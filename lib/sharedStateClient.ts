@@ -10,8 +10,10 @@ import {
 
 const SHARED_STATE_STORAGE_KEY = "gymPartnerSharedState:v1";
 const SHARED_STATE_LOCAL_EVENT = "gymPartnerSharedState:local-update";
+const SHARED_STATE_REMOTE_POLL_INTERVAL_MS = 3000;
 
 let browserClient: SupabaseClient | null = null;
+let pendingRemoteSaves = 0;
 
 function readLocalSharedState(): SharedAppState | null {
   if (typeof window === "undefined") {
@@ -46,6 +48,12 @@ function emitLocalSharedState(state: SharedAppState): void {
   window.dispatchEvent(
     new CustomEvent<SharedAppState>(SHARED_STATE_LOCAL_EVENT, { detail: state })
   );
+}
+
+function cacheSharedState(state: SharedAppState): SharedAppState {
+  const normalizedState = normalizeSharedState(state);
+  writeLocalSharedState(normalizedState);
+  return normalizedState;
 }
 
 function getBrowserSupabaseClient(): SupabaseClient | null {
@@ -83,8 +91,7 @@ export async function loadSharedState(): Promise<SharedAppState | null> {
     }
 
     if (remoteState) {
-      writeLocalSharedState(remoteState);
-      return remoteState;
+      return cacheSharedState(remoteState);
     }
 
     return localState;
@@ -102,6 +109,8 @@ export async function saveSharedStatePatch(patch: SharedAppStatePatch): Promise<
 
   writeLocalSharedState(nextLocalState);
   emitLocalSharedState(nextLocalState);
+
+  pendingRemoteSaves += 1;
 
   try {
     const response = await fetch("/api/shared-state", {
@@ -122,24 +131,43 @@ export async function saveSharedStatePatch(patch: SharedAppStatePatch): Promise<
 
     const payload = (await response.json()) as { state?: unknown };
     if (payload.state) {
-      const remoteState = normalizeSharedState(payload.state);
-      writeLocalSharedState(remoteState);
+      const remoteState = cacheSharedState(normalizeSharedState(payload.state));
       emitLocalSharedState(remoteState);
     }
   } catch (error) {
     if (error instanceof Error && error.message === "Unable to save shared state.") {
       throw error;
     }
+  } finally {
+    pendingRemoteSaves = Math.max(0, pendingRemoteSaves - 1);
   }
 }
 
 export function subscribeToSharedState(
   onStateChange: (state: SharedAppState) => void
 ): () => void {
+  let lastAppliedStateJson = JSON.stringify(readLocalSharedState() ?? normalizeSharedState(null));
+  let polling = false;
+
+  const applyRemoteState = (state: SharedAppState) => {
+    const normalizedState = normalizeSharedState(state);
+    const nextStateJson = JSON.stringify(normalizedState);
+
+    if (nextStateJson === lastAppliedStateJson) {
+      return;
+    }
+
+    lastAppliedStateJson = nextStateJson;
+    cacheSharedState(normalizedState);
+    onStateChange(normalizedState);
+  };
+
   const handleLocalState = (event: Event) => {
     const state = (event as CustomEvent<SharedAppState>).detail;
     if (state) {
-      onStateChange(normalizeSharedState(state));
+      const normalizedState = normalizeSharedState(state);
+      lastAppliedStateJson = JSON.stringify(normalizedState);
+      onStateChange(normalizedState);
     }
   };
 
@@ -149,18 +177,58 @@ export function subscribeToSharedState(
     }
 
     try {
-      onStateChange(normalizeSharedState(JSON.parse(event.newValue)));
+      const normalizedState = normalizeSharedState(JSON.parse(event.newValue));
+      lastAppliedStateJson = JSON.stringify(normalizedState);
+      onStateChange(normalizedState);
     } catch {
       // Ignore malformed storage writes from outside the app.
     }
   };
 
+  const pollRemoteState = async () => {
+    if (polling || pendingRemoteSaves > 0) {
+      return;
+    }
+
+    polling = true;
+
+    try {
+      const response = await fetch("/api/shared-state", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const payload = (await response.json()) as {
+        state?: unknown;
+        configured?: boolean;
+      };
+
+      if (payload.configured === false || !payload.state) {
+        return;
+      }
+
+      applyRemoteState(normalizeSharedState(payload.state));
+    } catch {
+      // Realtime may still be connected; the next poll will retry.
+    } finally {
+      polling = false;
+    }
+  };
+
   window.addEventListener(SHARED_STATE_LOCAL_EVENT, handleLocalState);
   window.addEventListener("storage", handleStorage);
+  const pollIntervalId = window.setInterval(
+    pollRemoteState,
+    SHARED_STATE_REMOTE_POLL_INTERVAL_MS
+  );
 
   const supabase = getBrowserSupabaseClient();
   if (!supabase) {
     return () => {
+      window.clearInterval(pollIntervalId);
       window.removeEventListener(SHARED_STATE_LOCAL_EVENT, handleLocalState);
       window.removeEventListener("storage", handleStorage);
     };
@@ -179,13 +247,14 @@ export function subscribeToSharedState(
       (payload) => {
         const nextValue = (payload.new as { value?: unknown } | null)?.value;
         if (nextValue) {
-          onStateChange(normalizeSharedState(nextValue));
+          applyRemoteState(normalizeSharedState(nextValue));
         }
       }
     )
     .subscribe();
 
   return () => {
+    window.clearInterval(pollIntervalId);
     window.removeEventListener(SHARED_STATE_LOCAL_EVENT, handleLocalState);
     window.removeEventListener("storage", handleStorage);
     void supabase.removeChannel(channel);
