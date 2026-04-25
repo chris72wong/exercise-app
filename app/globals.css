@@ -138,6 +138,14 @@ button {
   background: #fb7185;
 }
 
+.calendar-date-both {
+  background: linear-gradient(
+    135deg,
+    rgba(168, 85, 247, 0.34) 0 50%,
+    rgba(249, 115, 22, 0.34) 50% 100%
+  );
+}
+
 [data-theme="light"] .bg-neutral-950,
 [data-theme="light"] .bg-neutral-950\/70,
 [data-theme="light"] .bg-neutral-950\/80,
@@ -170,6 +178,33 @@ button {
   color: #4b5563;
 }
 
+[data-theme="light"] .text-blue-100 {
+  color: #1e3a8a;
+}
+
+[data-theme="light"] .text-cyan-100,
+[data-theme="light"] .text-cyan-300 {
+  color: #155e75;
+}
+
+[data-theme="light"] .text-emerald-100,
+[data-theme="light"] .text-emerald-300 {
+  color: #065f46;
+}
+
+[data-theme="light"] .text-amber-100,
+[data-theme="light"] .text-amber-200 {
+  color: #92400e;
+}
+
+[data-theme="light"] .text-purple-100 {
+  color: #581c87;
+}
+
+[data-theme="light"] .text-orange-100 {
+  color: #9a3412;
+}
+
 [data-theme="light"] .border-neutral-800,
 [data-theme="light"] .border-neutral-700,
 [data-theme="light"] .border-neutral-500,
@@ -179,6 +214,10 @@ button {
 
 [data-theme="light"] .shadow-lg {
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .calendar-date-both {
+  color: #111827;
 }
 
 @keyframes progress-shimmer {

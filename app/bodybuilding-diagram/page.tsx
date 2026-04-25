@@ -29,12 +29,12 @@ function MuscleLabel({ points, x, y, children, textAnchor = "start" }: MuscleLab
       <polyline
         points={points}
         fill="none"
-        stroke="#ffffff"
+        stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth="2"
       />
-      <text x={x} y={y} fill="#ffffff" fontSize="13" fontWeight="600" textAnchor={textAnchor}>
+      <text x={x} y={y} fill="currentColor" fontSize="13" fontWeight="600" textAnchor={textAnchor}>
         {children}
       </text>
     </>
@@ -45,7 +45,7 @@ function FrontMuscleDiagram() {
   return (
     <svg
       viewBox="0 0 420 620"
-      className="mx-auto w-full max-w-[420px]"
+      className="mx-auto w-full max-w-[420px] text-white"
       role="img"
       aria-label="Front body muscle diagram"
     >
@@ -65,7 +65,7 @@ function FrontMuscleDiagram() {
         </linearGradient>
       </defs>
 
-      <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
+      <text x="210" y="36" textAnchor="middle" fill="currentColor" fontSize="20" fontWeight="700" opacity="0.95">
         FRONT
       </text>
 
@@ -146,7 +146,7 @@ function BackMuscleDiagram() {
   return (
     <svg
       viewBox="0 0 420 620"
-      className="mx-auto w-full max-w-[420px]"
+      className="mx-auto w-full max-w-[420px] text-white"
       role="img"
       aria-label="Back body muscle diagram"
     >
@@ -166,7 +166,7 @@ function BackMuscleDiagram() {
         </linearGradient>
       </defs>
 
-      <text x="210" y="36" textAnchor="middle" fill="#ffffff" fontSize="20" fontWeight="700" opacity="0.95">
+      <text x="210" y="36" textAnchor="middle" fill="currentColor" fontSize="20" fontWeight="700" opacity="0.95">
         BACK
       </text>
 

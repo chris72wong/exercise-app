@@ -351,22 +351,28 @@ export default function Page() {
           </div>
 
           <div className="flex-1 self-center">
-            <div className="mb-1 flex items-center justify-end text-[11px] font-semibold tracking-wide text-neutral-400">
-              <span>{progressPercent}%</span>
-            </div>
-
+            <div
+              className={`progress-blue relative h-3 w-full overflow-visible rounded-full bg-neutral-800 ${
+                progressPercent > 0 ? "progress-track-glow" : ""
+              }`}
+            >
               <div
-                className={`progress-blue relative h-1.5 w-full overflow-visible rounded-full bg-neutral-800 ${
-                  progressPercent > 0 ? "progress-track-glow" : ""
+                className={`relative h-full rounded-full transition-all duration-300 ${
+                  progressPercent > 0 ? "progress-fill-glow" : ""
                 }`}
+                style={{ width: `${progressPercent}%` }}
+              />
+              <span
+                className={`pointer-events-none absolute bottom-full mb-0.5 text-[11px] font-semibold tracking-wide transition-all ${
+                  progressPercent > 0 ? "progress-label-glow" : "text-neutral-500"
+                }`}
+                style={{
+                  left: `clamp(0%, calc(${progressPercent}% - 1.25rem), calc(100% - 2.5rem))`,
+                }}
               >
-                <div
-                  className={`relative h-full rounded-full transition-all duration-200 ${
-                    progressPercent > 0 ? "progress-fill-glow" : ""
-                  }`}
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+                {progressPercent}%
+              </span>
+            </div>
           </div>
 
           <button
