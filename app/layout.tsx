@@ -62,6 +62,26 @@ const navigationItems: NavigationItem[] = [
     ariaLabel: "Go to muscle diagram page",
     title: "Muscle Diagram",
     icon: (
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      >
+        <circle cx="12" cy="5" r="2.5" />
+        <path d="M12 7.5v6M7.5 10.5h9M12 13.5l-4 6M12 13.5l4 6" />
+      </svg>
+    ),
+  },
+  {
+    href: "/how-to-use",
+    ariaLabel: "Go to how to use page",
+    title: "How to Use",
+    icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
         <path d="M12 2C6.5 2 2 6.2 2 11.4 2 16.7 6.4 21 12 21s10-4.3 10-9.6C22 6.2 17.5 2 12 2zm0 16.7c-1 0-1.8-.8-1.8-1.8s.8-1.8 1.8-1.8 1.8.8 1.8 1.8-.8 1.8-1.8 1.8zm2.1-7.4-.7.4c-.9.5-1.3 1.1-1.3 2h-2.2c0-1.8.9-3.1 2.5-4l1-.6c.7-.4 1.1-.9 1.1-1.6 0-1-.8-1.7-2-1.7-1.2 0-2.1.8-2.2 2H8.1c.1-2.4 1.9-4 4.4-4 2.7 0 4.4 1.6 4.4 4 0 1.5-.8 2.7-2.3 3.5z" />
       </svg>

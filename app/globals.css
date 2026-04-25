@@ -142,8 +142,12 @@ button {
   background: linear-gradient(
     135deg,
     rgba(168, 85, 247, 0.34) 0 50%,
-    rgba(249, 115, 22, 0.34) 50% 100%
+    rgba(245, 158, 11, 0.34) 50% 100%
   );
+}
+
+.calendar-date-selected {
+  box-shadow: 0 0 0 2px #ffffff;
 }
 
 [data-theme="light"] .bg-neutral-950,
@@ -188,6 +192,7 @@ button {
 }
 
 [data-theme="light"] .text-emerald-100,
+[data-theme="light"] .text-emerald-200,
 [data-theme="light"] .text-emerald-300 {
   color: #065f46;
 }
@@ -218,6 +223,14 @@ button {
 
 [data-theme="light"] .calendar-date-both {
   color: #111827;
+}
+
+[data-theme="light"] .calendar-date-selected {
+  box-shadow: 0 0 0 2px #111827;
+}
+
+[data-theme="light"] .muscle-exercise-menu {
+  background-color: #ffffff;
 }
 
 @keyframes progress-shimmer {
