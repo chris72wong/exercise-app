@@ -142,7 +142,7 @@ button {
   background: linear-gradient(
     135deg,
     rgba(168, 85, 247, 0.34) 0 50%,
-    rgba(249, 115, 22, 0.34) 50% 100%
+    rgba(245, 158, 11, 0.34) 50% 100%
   );
 }
 
@@ -188,6 +188,7 @@ button {
 }
 
 [data-theme="light"] .text-emerald-100,
+[data-theme="light"] .text-emerald-200,
 [data-theme="light"] .text-emerald-300 {
   color: #065f46;
 }

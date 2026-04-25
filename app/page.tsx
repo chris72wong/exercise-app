@@ -121,11 +121,11 @@ function getCalendarCellActivityClasses(activities: CalendarActivity[], hasHolid
   }
 
   if (hasWeights) {
-    return "bg-orange-500/25 text-orange-100 hover:bg-orange-500/35";
+    return "bg-amber-500/25 text-amber-100 hover:bg-amber-500/35";
   }
 
   if (hasHoliday) {
-    return "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20";
+    return "bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20";
   }
 
   return "bg-neutral-950/70 text-white hover:bg-neutral-900";
@@ -296,7 +296,7 @@ export default function HomePage() {
                     onClick={() => setSelectedDateKey(cell.dateKey)}
                     className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
                       getCalendarCellActivityClasses(cell.activities, Boolean(cell.holidayName))
-                    } ${cell.isToday ? "ring-2 ring-amber-400" : ""} ${
+                    } ${cell.isToday ? "ring-2 ring-emerald-400" : ""} ${
                       selectedDateKey === cell.dateKey ? "ring-2 ring-cyan-300" : ""
                     }`}
                     aria-label={`Open calendar options for ${cell.dateKey}`}
@@ -304,7 +304,7 @@ export default function HomePage() {
                     <span>{cell.date}</span>
 
                     {cell.holidayName && (
-                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300" />
+                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-emerald-300" />
                     )}
 
                     {cell.activities.length > 0 && (
@@ -313,7 +313,7 @@ export default function HomePage() {
                           <span className="h-1.5 w-1.5 rounded-full bg-purple-300" />
                         )}
                         {cell.activities.includes("weights") && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-orange-300" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
                         )}
                       </span>
                     )}
@@ -333,7 +333,7 @@ export default function HomePage() {
                     {formatSelectedDate(selectedCalendarCell.dateKey)}
                   </p>
                   {selectedCalendarCell.holidayName && (
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-amber-200">
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
                       {selectedCalendarCell.holidayName}
                     </p>
                   )}
@@ -357,7 +357,7 @@ export default function HomePage() {
                     onClick={() => toggleCalendarActivity(selectedCalendarCell.dateKey, "weights")}
                     className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
                       selectedCalendarCell.activities.includes("weights")
-                        ? "border-orange-300 bg-orange-500/30 text-orange-100"
+                        ? "border-amber-300 bg-amber-500/30 text-amber-100"
                         : "border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
                     }`}
                   >

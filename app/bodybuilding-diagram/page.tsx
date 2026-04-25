@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
+import { exercises } from "@/data/exercises";
 import {
   createDefaultSharedState,
+  fullBodyExercisePool,
   getFullBodyAndStretchProgressPercent,
   getCurrentWorkoutProgressPercent,
   type SharedAppState,
@@ -15,17 +17,96 @@ import WorkoutProgressWidget from "../_components/workout-progress-widget";
 
 const DEFAULT_SHARED_STATE = createDefaultSharedState();
 
+type DiagramSide = "front" | "back";
+type DiagramMuscleGroup =
+  | "Abs"
+  | "Back"
+  | "Biceps"
+  | "Calves"
+  | "Chest"
+  | "Glutes"
+  | "Hamstrings"
+  | "Quads"
+  | "Shoulders"
+  | "Traps"
+  | "Triceps";
+
+type ActiveMuscleSelection = {
+  side: DiagramSide;
+  muscleGroup: DiagramMuscleGroup;
+};
+
 type MuscleLabelProps = {
   points: string;
   x: number;
   y: number;
+  muscleGroup: DiagramMuscleGroup;
+  isSelected: boolean;
+  onSelect: (muscleGroup: DiagramMuscleGroup) => void;
   children: string;
   textAnchor?: "start" | "middle" | "end";
 };
 
-function MuscleLabel({ points, x, y, children, textAnchor = "start" }: MuscleLabelProps) {
+function getExercisesForMuscleGroup(muscleGroup: DiagramMuscleGroup): string[] {
+  if (muscleGroup === "Quads") {
+    return fullBodyExercisePool
+      .filter((exercise) => ["Squat", "Lunge"].includes(exercise.movementPattern))
+      .map((exercise) => exercise.name)
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  if (muscleGroup === "Glutes") {
+    return fullBodyExercisePool
+      .filter((exercise) => ["Hip Hinge", "Lunge"].includes(exercise.movementPattern))
+      .map((exercise) => exercise.name)
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  if (muscleGroup === "Hamstrings") {
+    return fullBodyExercisePool
+      .filter((exercise) => exercise.movementPattern === "Hip Hinge")
+      .map((exercise) => exercise.name)
+      .sort((a, b) => a.localeCompare(b));
+  }
+
+  if (muscleGroup === "Calves") {
+    return ["Standing Calf Raise", "Seated Calf Raise", "Leg Press Calf Press"];
+  }
+
+  return exercises
+    .filter((exercise) => exercise.muscleGroup === muscleGroup)
+    .map((exercise) => exercise.name)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function MuscleLabel({
+  points,
+  x,
+  y,
+  muscleGroup,
+  isSelected,
+  onSelect,
+  children,
+  textAnchor = "start",
+}: MuscleLabelProps) {
+  const handleKeyDown = (event: KeyboardEvent<SVGGElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect(muscleGroup);
+    }
+  };
+
   return (
-    <>
+    <g
+      role="button"
+      tabIndex={0}
+      className={`cursor-pointer outline-none transition-colors hover:text-emerald-300 focus:text-emerald-300 ${
+        isSelected ? "text-emerald-300" : "text-neutral-100"
+      }`}
+      aria-label={`Show ${muscleGroup} exercises`}
+      onClick={() => onSelect(muscleGroup)}
+      onKeyDown={handleKeyDown}
+    >
       <polyline
         points={points}
         fill="none"
@@ -37,11 +118,16 @@ function MuscleLabel({ points, x, y, children, textAnchor = "start" }: MuscleLab
       <text x={x} y={y} fill="currentColor" fontSize="13" fontWeight="600" textAnchor={textAnchor}>
         {children}
       </text>
-    </>
+    </g>
   );
 }
 
-function FrontMuscleDiagram() {
+type MuscleDiagramProps = {
+  selectedMuscleGroup: DiagramMuscleGroup | null;
+  onSelect: (muscleGroup: DiagramMuscleGroup) => void;
+};
+
+function FrontMuscleDiagram({ selectedMuscleGroup, onSelect }: MuscleDiagramProps) {
   return (
     <svg
       viewBox="0 0 420 620"
@@ -123,26 +209,71 @@ function FrontMuscleDiagram() {
       <path d="M164 560 C176 552 195 552 208 563 L208 575 L160 575 Z" fill="#2b1d15" opacity="0.8" />
       <path d="M256 560 C244 552 225 552 212 563 L212 575 L260 575 Z" fill="#2b1d15" opacity="0.8" />
 
-      <MuscleLabel points="152,150 124,130 94,114" x={20} y={106}>
+      <MuscleLabel
+        points="152,150 124,130 94,114"
+        x={20}
+        y={106}
+        muscleGroup="Shoulders"
+        isSelected={selectedMuscleGroup === "Shoulders"}
+        onSelect={onSelect}
+      >
         Shoulders
       </MuscleLabel>
-      <MuscleLabel points="138,178 108,183 90,198" x={20} y={208}>
+      <MuscleLabel
+        points="181,177 268,170 316,164"
+        x={324}
+        y={168}
+        muscleGroup="Chest"
+        isSelected={selectedMuscleGroup === "Chest"}
+        onSelect={onSelect}
+      >
+        Chest
+      </MuscleLabel>
+      <MuscleLabel
+        points="138,178 108,183 90,198"
+        x={20}
+        y={208}
+        muscleGroup="Biceps"
+        isSelected={selectedMuscleGroup === "Biceps"}
+        onSelect={onSelect}
+      >
         Biceps
       </MuscleLabel>
-      <MuscleLabel points="211,252 262,255 308,266" x={314} y={274}>
+      <MuscleLabel
+        points="211,252 262,255 308,266"
+        x={314}
+        y={274}
+        muscleGroup="Abs"
+        isSelected={selectedMuscleGroup === "Abs"}
+        onSelect={onSelect}
+      >
         Abs
       </MuscleLabel>
-      <MuscleLabel points="178,382 136,394 96,414" x={20} y={426}>
+      <MuscleLabel
+        points="178,382 136,394 96,414"
+        x={20}
+        y={426}
+        muscleGroup="Quads"
+        isSelected={selectedMuscleGroup === "Quads"}
+        onSelect={onSelect}
+      >
         Quads
       </MuscleLabel>
-      <MuscleLabel points="182,506 138,518 96,538" x={20} y={550}>
+      <MuscleLabel
+        points="182,506 138,518 96,538"
+        x={20}
+        y={550}
+        muscleGroup="Calves"
+        isSelected={selectedMuscleGroup === "Calves"}
+        onSelect={onSelect}
+      >
         Calves
       </MuscleLabel>
     </svg>
   );
 }
 
-function BackMuscleDiagram() {
+function BackMuscleDiagram({ selectedMuscleGroup, onSelect }: MuscleDiagramProps) {
   return (
     <svg
       viewBox="0 0 420 620"
@@ -219,30 +350,123 @@ function BackMuscleDiagram() {
       <path d="M164 560 C176 552 195 552 208 563 L208 575 L160 575 Z" fill="#2b1d15" opacity="0.8" />
       <path d="M256 560 C244 552 225 552 212 563 L212 575 L260 575 Z" fill="#2b1d15" opacity="0.8" />
 
-      <MuscleLabel points="210,150 166,132 104,114" x={20} y={106}>
+      <MuscleLabel
+        points="210,150 166,132 104,114"
+        x={20}
+        y={106}
+        muscleGroup="Traps"
+        isSelected={selectedMuscleGroup === "Traps"}
+        onSelect={onSelect}
+      >
         Traps
       </MuscleLabel>
-      <MuscleLabel points="241,190 286,184 324,170" x={332} y={164}>
+      <MuscleLabel
+        points="241,190 286,184 324,170"
+        x={332}
+        y={164}
+        muscleGroup="Back"
+        isSelected={selectedMuscleGroup === "Back"}
+        onSelect={onSelect}
+      >
         Back
       </MuscleLabel>
-      <MuscleLabel points="137,180 110,186 94,202" x={20} y={212}>
+      <MuscleLabel
+        points="137,180 110,186 94,202"
+        x={20}
+        y={212}
+        muscleGroup="Triceps"
+        isSelected={selectedMuscleGroup === "Triceps"}
+        onSelect={onSelect}
+      >
         Triceps
       </MuscleLabel>
-      <MuscleLabel points="228,316 274,323 314,338" x={320} y={348}>
+      <MuscleLabel
+        points="228,316 274,323 314,338"
+        x={320}
+        y={348}
+        muscleGroup="Glutes"
+        isSelected={selectedMuscleGroup === "Glutes"}
+        onSelect={onSelect}
+      >
         Glutes
       </MuscleLabel>
-      <MuscleLabel points="242,388 286,398 324,416" x={268} y={438}>
+      <MuscleLabel
+        points="242,388 286,398 324,416"
+        x={268}
+        y={438}
+        muscleGroup="Hamstrings"
+        isSelected={selectedMuscleGroup === "Hamstrings"}
+        onSelect={onSelect}
+      >
         Hamstrings
       </MuscleLabel>
-      <MuscleLabel points="242,510 286,526 324,546" x={300} y={566}>
+      <MuscleLabel
+        points="242,510 286,526 324,546"
+        x={300}
+        y={566}
+        muscleGroup="Calves"
+        isSelected={selectedMuscleGroup === "Calves"}
+        onSelect={onSelect}
+      >
         Calves
       </MuscleLabel>
     </svg>
   );
 }
 
+type MuscleExerciseMenuProps = {
+  muscleGroup: DiagramMuscleGroup;
+  onBack: () => void;
+};
+
+function MuscleExerciseMenu({ muscleGroup, onBack }: MuscleExerciseMenuProps) {
+  const associatedExercises = getExercisesForMuscleGroup(muscleGroup);
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-2xl border border-emerald-400/30 bg-neutral-950/90 shadow-lg">
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex w-full items-center gap-2 border-b border-neutral-800 px-4 py-3 text-left text-sm font-semibold text-emerald-200 transition-colors hover:bg-neutral-900"
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        >
+          <path d="M9 14 4 9l5-5" />
+          <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+        </svg>
+        Back
+      </button>
+
+      <div className="px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+          {muscleGroup} exercises
+        </p>
+        <ul className="mt-3 space-y-2">
+          {associatedExercises.map((exercise) => (
+            <li
+              key={exercise}
+              className="rounded-xl border border-neutral-800 bg-neutral-900/80 px-3 py-2 text-sm text-neutral-100"
+            >
+              {exercise}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 export default function BodybuildingDiagramPage() {
   const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
+  const [activeSelection, setActiveSelection] = useState<ActiveMuscleSelection | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -268,6 +492,10 @@ export default function BodybuildingDiagramPage() {
     sharedState.completedExercises
   );
   const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent(sharedState);
+  const selectedFrontMuscleGroup =
+    activeSelection?.side === "front" ? activeSelection.muscleGroup : null;
+  const selectedBackMuscleGroup =
+    activeSelection?.side === "back" ? activeSelection.muscleGroup : null;
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
@@ -288,14 +516,32 @@ export default function BodybuildingDiagramPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
             <div className="rounded-2xl bg-neutral-950/80 p-4">
-              <FrontMuscleDiagram />
+              <FrontMuscleDiagram
+                selectedMuscleGroup={selectedFrontMuscleGroup}
+                onSelect={(muscleGroup) => setActiveSelection({ side: "front", muscleGroup })}
+              />
             </div>
+            {selectedFrontMuscleGroup && (
+              <MuscleExerciseMenu
+                muscleGroup={selectedFrontMuscleGroup}
+                onBack={() => setActiveSelection(null)}
+              />
+            )}
           </article>
 
           <article className="rounded-3xl border border-neutral-800 bg-neutral-900/80 p-6 shadow-lg">
             <div className="rounded-2xl bg-neutral-950/80 p-4">
-              <BackMuscleDiagram />
+              <BackMuscleDiagram
+                selectedMuscleGroup={selectedBackMuscleGroup}
+                onSelect={(muscleGroup) => setActiveSelection({ side: "back", muscleGroup })}
+              />
             </div>
+            {selectedBackMuscleGroup && (
+              <MuscleExerciseMenu
+                muscleGroup={selectedBackMuscleGroup}
+                onBack={() => setActiveSelection(null)}
+              />
+            )}
           </article>
         </div>
       </section>
