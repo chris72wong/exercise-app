@@ -1,12 +1,114 @@
 [
-  "Goblet Squats",
-  "Push-Ups",
-  "Bent-Over Dumbbell Rows",
-  "Romanian Deadlifts",
-  "Walking Lunges",
-  "Overhead Press",
-  "Plank Hold",
-  "Glute Bridges",
-  "Mountain Climbers",
-  "Farmer Carries"
+  {
+    "name": "Goblet Squat",
+    "muscleGroup": "Legs",
+    "movementPattern": "Squat",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Romanian Deadlift",
+    "muscleGroup": "Legs",
+    "movementPattern": "Hip Hinge",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Walking Lunge",
+    "muscleGroup": "Legs",
+    "movementPattern": "Lunge",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Leg Press",
+    "muscleGroup": "Legs",
+    "movementPattern": "Squat",
+    "equipment": "Machine",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "muscleGroup": "Legs",
+    "movementPattern": "Lunge",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Pull Up",
+    "muscleGroup": "Back",
+    "movementPattern": "Vertical Pull",
+    "equipment": "Bodyweight",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Barbell Row",
+    "muscleGroup": "Back",
+    "movementPattern": "Horizontal Pull",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Lat Pulldown",
+    "muscleGroup": "Back",
+    "movementPattern": "Vertical Pull",
+    "equipment": "Cable",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Barbell Overhead Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Arnold Press",
+    "muscleGroup": "Shoulders",
+    "movementPattern": "Vertical Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Barbell Bench Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Barbell",
+    "type": "Compound",
+    "slotType": "Primary"
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "muscleGroup": "Chest",
+    "movementPattern": "Incline Press",
+    "equipment": "Dumbbell",
+    "type": "Compound",
+    "slotType": "Secondary"
+  },
+  {
+    "name": "Push Up",
+    "muscleGroup": "Chest",
+    "movementPattern": "Horizontal Press",
+    "equipment": "Bodyweight",
+    "type": "Compound",
+    "slotType": "Secondary"
+  }
 ]

@@ -5,7 +5,10 @@ import Holidays from "date-holidays";
 import type { WorkoutDay } from "@/lib/generateWorkout";
 import {
   createDefaultSharedState,
+  getFullBodyAndStretchProgressPercent,
   getCurrentWorkoutProgressPercent,
+  type CalendarActivitiesByDate,
+  type CalendarActivity,
   type SharedAppState,
   type SharedAppStatePatch,
 } from "@/lib/sharedState";
@@ -22,7 +25,7 @@ type CalendarCell = {
   date: number;
   dateKey: string;
   isToday: boolean;
-  isComplete: boolean;
+  activities: CalendarActivity[];
   holidayName?: string;
 } | null;
 
@@ -45,7 +48,10 @@ function getFirstDayOfMonth(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 }
 
-function getCurrentMonthCalendar(displayMonth: Date, completedDates: Set<string>): CalendarCell[] {
+function getCurrentMonthCalendar(
+  displayMonth: Date,
+  calendarActivities: CalendarActivitiesByDate
+): CalendarCell[] {
   const daysInMonth = getDaysInMonth(displayMonth);
   const firstDay = getFirstDayOfMonth(displayMonth);
   const calendar: CalendarCell[] = [];
@@ -73,7 +79,7 @@ function getCurrentMonthCalendar(displayMonth: Date, completedDates: Set<string>
       date: day,
       dateKey,
       isToday: dateKey === getTodayKey(),
-      isComplete: completedDates.has(dateKey),
+      activities: calendarActivities[dateKey] ?? [],
       holidayName: holidayMap.get(dateKey),
     });
   }
@@ -81,18 +87,65 @@ function getCurrentMonthCalendar(displayMonth: Date, completedDates: Set<string>
   return calendar;
 }
 
+function getDateFromKey(dateKey: string): Date {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function formatSelectedDate(dateKey: string): string {
+  return getDateFromKey(dateKey).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function sortActivities(activities: CalendarActivity[]): CalendarActivity[] {
+  const activitySet = new Set(activities);
+  return (["cardio", "weights"] as CalendarActivity[]).filter((activity) =>
+    activitySet.has(activity)
+  );
+}
+
+function getCalendarCellActivityClasses(activities: CalendarActivity[], hasHoliday: boolean): string {
+  const hasCardio = activities.includes("cardio");
+  const hasWeights = activities.includes("weights");
+
+  if (hasCardio && hasWeights) {
+    return "calendar-date-both text-white hover:brightness-110";
+  }
+
+  if (hasCardio) {
+    return "bg-purple-500/25 text-purple-100 hover:bg-purple-500/35";
+  }
+
+  if (hasWeights) {
+    return "bg-orange-500/25 text-orange-100 hover:bg-orange-500/35";
+  }
+
+  if (hasHoliday) {
+    return "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20";
+  }
+
+  return "bg-neutral-950/70 text-white hover:bg-neutral-900";
+}
+
 export default function HomePage() {
   const [displayMonth, setDisplayMonth] = useState(() => new Date());
-  const [completedDates, setCompletedDates] = useState<Set<string>>(
-    () => new Set(DEFAULT_SHARED_STATE.completedDates)
+  const [calendarActivities, setCalendarActivities] = useState<CalendarActivitiesByDate>(
+    () => DEFAULT_SHARED_STATE.calendarActivities
   );
+  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
   const [workout, setWorkout] = useState<WorkoutDay[]>(DEFAULT_SHARED_STATE.workout);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(
     () => new Set(DEFAULT_SHARED_STATE.completedExercises)
   );
+  const [sharedState, setSharedState] = useState<SharedAppState>(DEFAULT_SHARED_STATE);
 
   const applySharedState = (state: SharedAppState) => {
-    setCompletedDates(new Set(state.completedDates));
+    setSharedState(state);
+    setCalendarActivities(state.calendarActivities);
     setWorkout(state.workout);
     setCompletedExercises(new Set(state.completedExercises));
   };
@@ -120,11 +173,16 @@ export default function HomePage() {
     };
   }, []);
 
-  const calendarCells = getCurrentMonthCalendar(displayMonth, completedDates);
+  const calendarCells = getCurrentMonthCalendar(displayMonth, calendarActivities);
+  const selectedCalendarCell =
+    calendarCells.find((cell): cell is NonNullable<CalendarCell> => {
+      return cell?.dateKey === selectedDateKey;
+    }) ?? null;
   const exercisePageProgressPercent = getCurrentWorkoutProgressPercent(
     workout,
     completedExercises
   );
+  const fullBodyProgressPercent = getFullBodyAndStretchProgressPercent(sharedState);
   const monthLabel = displayMonth.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
@@ -132,43 +190,61 @@ export default function HomePage() {
 
   const goToPreviousMonth = () => {
     setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1));
+    setSelectedDateKey(null);
   };
 
   const goToNextMonth = () => {
     setDisplayMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1));
+    setSelectedDateKey(null);
   };
 
   const goToCurrentMonth = () => {
     setDisplayMonth(new Date());
+    setSelectedDateKey(null);
   };
 
-  const toggleCalendarDate = (dateKey: string) => {
-    const next = new Set(completedDates);
+  const toggleCalendarActivity = (dateKey: string, activity: CalendarActivity) => {
+    const currentActivities = calendarActivities[dateKey] ?? [];
+    const nextActivities = currentActivities.includes(activity)
+      ? currentActivities.filter((currentActivity) => currentActivity !== activity)
+      : sortActivities([...currentActivities, activity]);
+    const nextCalendarActivities = { ...calendarActivities };
 
-    if (next.has(dateKey)) {
-      next.delete(dateKey);
+    if (nextActivities.length > 0) {
+      nextCalendarActivities[dateKey] = nextActivities;
     } else {
-      next.add(dateKey);
+      delete nextCalendarActivities[dateKey];
     }
 
-    setCompletedDates(next);
-    persistSharedState({ completedDates: [...next] });
+    setCalendarActivities(nextCalendarActivities);
+    persistSharedState({
+      calendarActivities: nextCalendarActivities,
+      completedDates: Object.keys(nextCalendarActivities),
+    });
   };
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <div className="mx-auto flex w-full max-w-5xl flex-col px-6 py-8">
-        <WorkoutProgressWidget
-          title="Current Workout Progress"
-          progressPercent={exercisePageProgressPercent}
-        />
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <WorkoutProgressWidget
+            title="Progress Bar 1"
+            progressPercent={exercisePageProgressPercent}
+            variant="blue"
+          />
+          <WorkoutProgressWidget
+            title="Progress Bar 2"
+            progressPercent={fullBodyProgressPercent}
+            variant="red"
+          />
+        </div>
 
         <div className="rounded-3xl bg-neutral-900/80 p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold">Workout Tracker</h2>
               <p className="mt-1 text-sm text-neutral-400">
-                Today is outlined. Toggle dates to mark workout days.
+                Today is outlined. Pick a date to log cardio or weights.
               </p>
             </div>
 
@@ -217,26 +293,29 @@ export default function HomePage() {
                 {cell ? (
                   <button
                     type="button"
-                    onClick={() => toggleCalendarDate(cell.dateKey)}
+                    onClick={() => setSelectedDateKey(cell.dateKey)}
                     className={`relative flex h-full w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors ${
-                      cell.isComplete
-                        ? "bg-emerald-500/25 text-emerald-200"
-                        : cell.holidayName
-                          ? "bg-amber-500/15 text-amber-100 hover:bg-amber-500/20"
-                          : "bg-neutral-950/70 text-white hover:bg-neutral-900"
-                    } ${cell.isToday ? "ring-2 ring-amber-400" : ""}`}
-                    aria-label={`Toggle workout date ${cell.dateKey}`}
+                      getCalendarCellActivityClasses(cell.activities, Boolean(cell.holidayName))
+                    } ${cell.isToday ? "ring-2 ring-amber-400" : ""} ${
+                      selectedDateKey === cell.dateKey ? "ring-2 ring-cyan-300" : ""
+                    }`}
+                    aria-label={`Open calendar options for ${cell.dateKey}`}
                   >
                     <span>{cell.date}</span>
 
                     {cell.holidayName && (
-                      <span className="mt-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
-                        {cell.holidayName}
-                      </span>
+                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300" />
                     )}
 
-                    {cell.isComplete && (
-                      <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-emerald-400" />
+                    {cell.activities.length > 0 && (
+                      <span className="absolute bottom-1 flex gap-1">
+                        {cell.activities.includes("cardio") && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-purple-300" />
+                        )}
+                        {cell.activities.includes("weights") && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-orange-300" />
+                        )}
+                      </span>
                     )}
                   </button>
                 ) : (
@@ -245,6 +324,49 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          {selectedCalendarCell && (
+            <div className="mt-4 rounded-2xl border border-neutral-800 bg-neutral-950/80 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {formatSelectedDate(selectedCalendarCell.dateKey)}
+                  </p>
+                  {selectedCalendarCell.holidayName && (
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-amber-200">
+                      {selectedCalendarCell.holidayName}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleCalendarActivity(selectedCalendarCell.dateKey, "cardio")}
+                    className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
+                      selectedCalendarCell.activities.includes("cardio")
+                        ? "border-purple-300 bg-purple-500/30 text-purple-100"
+                        : "border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+                    }`}
+                  >
+                    Cardio
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleCalendarActivity(selectedCalendarCell.dateKey, "weights")}
+                    className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
+                      selectedCalendarCell.activities.includes("weights")
+                        ? "border-orange-300 bg-orange-500/30 text-orange-100"
+                        : "border-neutral-700 bg-neutral-900 text-neutral-200 hover:bg-neutral-800"
+                    }`}
+                  >
+                    Weights
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>
