@@ -40,6 +40,11 @@
 
 html {
   min-height: 100%;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
